@@ -1,0 +1,29 @@
+id,name,category,condition,price,generation,memory,chipset,socket,stock,image,description
+CPU-004-I5,Intel Core i5 4th Gen Processor,PROCESSOR,USED,14500,4,DDR3,,LGA1150,5,assets/img/logo.jpg,Budget office and gaming starter processor
+CPU-004-I7,Intel Core i7 4th Gen Processor,PROCESSOR,USED,23500,4,DDR3,,LGA1150,3,assets/img/logo.jpg,High performance 4th gen processor
+CPU-006-I5,Intel Core i5 6th Gen Processor,PROCESSOR,USED,22500,6,DDR4,,LGA1151,4,assets/img/logo.jpg,DDR4 supported 6th gen processor
+CPU-008-I5,Intel Core i5 8th Gen Processor,PROCESSOR,USED,32500,8,DDR4,,LGA1151,2,assets/img/logo.jpg,8th gen performance processor
+CPU-010-I3,Intel Core i3 10th Gen Processor,PROCESSOR,NEW,35500,10,DDR4,,LGA1200,2,assets/img/logo.jpg,Modern 10th gen desktop processor
+MB-H61,H61 Motherboard,MOTHERBOARD,USED,11500,3,DDR3,H61,LGA1155,6,assets/img/logo.jpg,2nd/3rd gen DDR3 motherboard
+MB-H81,H81 Motherboard,MOTHERBOARD,USED,14500,4,DDR3,H81,LGA1150,5,assets/img/logo.jpg,4th gen DDR3 motherboard
+MB-B85,B85 Motherboard,MOTHERBOARD,USED,17500,4,DDR3,B85,LGA1150,3,assets/img/logo.jpg,4th gen business motherboard
+MB-H110,H110 DDR4 Motherboard,MOTHERBOARD,USED,19500,6,DDR4,H110,LGA1151,4,assets/img/logo.jpg,6th/7th gen DDR4 motherboard
+MB-B360,B360 Motherboard,MOTHERBOARD,USED,28500,8,DDR4,B360,LGA1151,2,assets/img/logo.jpg,8th/9th gen DDR4 motherboard
+MB-H410,H410 Motherboard,MOTHERBOARD,NEW,34500,10,DDR4,H410,LGA1200,2,assets/img/logo.jpg,10th gen DDR4 motherboard
+RAM-DDR2-2GB,2GB DDR2 RAM,RAM,USED,1500,,DDR2,,,10,assets/img/logo.jpg,Desktop DDR2 memory
+RAM-DDR3-4GB,4GB DDR3 RAM,RAM,USED,3500,,DDR3,,,12,assets/img/logo.jpg,Desktop DDR3 memory
+RAM-DDR3-8GB,8GB DDR3 RAM,RAM,USED,6500,,DDR3,,,7,assets/img/logo.jpg,Desktop DDR3 memory
+RAM-DDR4-8GB,8GB DDR4 RAM,RAM,USED,7500,,DDR4,,,8,assets/img/logo.jpg,Desktop DDR4 memory
+RAM-DDR5-16GB,16GB DDR5 RAM,RAM,NEW,18500,,DDR5,,,2,assets/img/logo.jpg,Desktop DDR5 memory
+COOLER-STOCK,Intel Stock CPU Cooler,CPU COOLER,USED,1500,,,,,9,assets/img/logo.jpg,Standard CPU cooler
+CASING-RGB,RGB Gaming Casing,CASING,NEW,12500,,,,,3,assets/img/logo.jpg,Gaming casing with airflow
+SSD-128,128GB SSD,SSD,NEW,4500,,,,,8,assets/img/logo.jpg,Fast boot drive
+SSD-256,256GB SSD,SSD,NEW,6500,,,,,6,assets/img/logo.jpg,SATA SSD
+HDD-500,500GB Hard Disk,HARD DISK,USED,5500,,,,,5,assets/img/logo.jpg,Desktop hard disk
+PSU-500,500W Power Supply,POWER SUPPLY,USED,6500,,,,,4,assets/img/logo.jpg,Desktop power supply
+CABLE-SATA,SATA Cable,CABLES,NEW,450,,,,,25,assets/img/logo.jpg,SATA data cable
+MON-19,19 inch LED Monitor,MONITOR,USED,13500,,,,,4,assets/img/logo.jpg,LED monitor
+KEY-USB,USB Keyboard,KEYBOARD,NEW,1800,,,,,12,assets/img/logo.jpg,Standard keyboard
+MOUSE-USB,USB Mouse,MOUSE,NEW,900,,,,,15,assets/img/logo.jpg,Optical mouse
+SPEAKER-2CH,2.0 Speaker Set,SPEAKER,NEW,3500,,,,,7,assets/img/logo.jpg,Desktop speakers
+HEADSET-GM,Gaming Headset,HEADSET,NEW,4500,,,,,6,assets/img/logo.jpg,Gaming headset with mic
