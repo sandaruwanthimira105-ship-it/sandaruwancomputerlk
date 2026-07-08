@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sandaruwan Computer | PC Store Ratnapura</title>
+  <meta name="description" content="Sandaruwan Computer - PC builds, computer parts, online quotations and WhatsApp ordering in Ratnapura.">
+  <link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* Home page update: wide banners first + 1:1 pre-build product slider */
+    .home-banner-hero{
+      padding:46px 0 22px;
+      background:linear-gradient(110deg,rgba(11,188,255,.08),rgba(45,87,255,.08) 48%,rgba(7,12,28,0) 74%);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .home-main-slider{
+      margin:0 auto;
+      aspect-ratio:21/9;
+      min-height:unset;
+      max-height:560px;
+      border-radius:30px;
+    }
+    .home-main-slider .wide-banner-slide{cursor:default;pointer-events:none;}
+    .home-main-slider .wide-banner-slide img{
+      width:100%;height:100%;object-fit:cover;object-position:center;
+      display:block;
+      user-select:none;
+    }
+    .prebuild-home-section{padding:56px 0 30px;}
+    .section-head-row{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:22px;}
+    .section-head-row h2{margin:0;font-size:clamp(30px,4vw,46px);letter-spacing:-1.5px;line-height:1.02;}
+    .section-head-row p{margin:10px 0 0;color:var(--muted);line-height:1.7;max-width:720px;}
+    .prebuild-home-window{overflow:hidden;position:relative;border-radius:28px;}
+    .prebuild-home-track{display:flex;gap:18px;transition:transform .65s cubic-bezier(.2,.8,.2,1);will-change:transform;}
+    .home-prebuild-card{
+      position:relative;flex:0 0 calc((100% - 54px) / 4);aspect-ratio:1/1;
+      overflow:hidden;border-radius:24px;background:#0c152a;border:1px solid var(--line2);
+      box-shadow:0 18px 44px rgba(0,0,0,.24);color:#fff;
+    }
+    .home-prebuild-card img{width:100%;height:100%;object-fit:cover;display:block;transform:scale(1.02);transition:transform .35s ease;}
+    .home-prebuild-card:hover img{transform:scale(1.07);}
+    .home-prebuild-card:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 28%,rgba(2,6,16,.92) 100%);}
+    .home-prebuild-card-content{position:absolute;left:0;right:0;bottom:0;padding:18px;z-index:2;}
+    .home-prebuild-card small{display:inline-flex;margin-bottom:8px;padding:6px 9px;border-radius:999px;background:rgba(11,188,255,.18);border:1px solid rgba(11,188,255,.38);color:#c8f7ff;font-weight:950;font-size:11px;letter-spacing:.35px;text-transform:uppercase;}
+    .home-prebuild-card h3{margin:0 0 7px;font-size:21px;line-height:1.15;letter-spacing:-.4px;}
+    .home-prebuild-card .home-price{color:#fff;font-size:17px;font-weight:950;}
+    .home-prebuild-card .home-spec{margin-top:8px;color:#bed1e9;font-size:13px;line-height:1.45;}
+    .home-prebuild-progress{display:flex;gap:7px;justify-content:center;margin-top:18px;}
+    .home-prebuild-dot{width:26px;height:6px;border-radius:99px;background:rgba(255,255,255,.18);transition:.25s ease;}
+    .home-prebuild-dot.active{background:linear-gradient(90deg,var(--brand),var(--brand2));width:42px;}
+
+    .hero-quick-actions{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-top:22px;
+    }
+    .hero-quick-actions .btn{
+      min-width:178px;
+      justify-content:center;
+      box-shadow:0 14px 34px rgba(0,0,0,.24);
+    }
+    .after-prebuild-banners{
+      padding:8px 0 52px;
+    }
+    .wide-image-stack{
+      display:grid;
+      gap:24px;
+    }
+    .wide-image-reveal{
+      position:relative;
+      overflow:hidden;
+      border-radius:30px;
+      border:1px solid var(--line2);
+      background:#071225;
+      box-shadow:0 22px 64px rgba(0,0,0,.28);
+      aspect-ratio:21/9;
+      opacity:0;
+      transform:translateY(46px) scale(.985);
+      filter:blur(8px);
+      transition:opacity .75s ease, transform .75s cubic-bezier(.2,.8,.2,1), filter .75s ease;
+    }
+    .wide-image-reveal.in-view{
+      opacity:1;
+      transform:translateY(0) scale(1);
+      filter:blur(0);
+    }
+    .wide-image-reveal img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center;
+      display:block;
+      user-select:none;
+      pointer-events:none;
+    }
+    .wide-image-reveal:after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(90deg,rgba(2,6,16,.16),rgba(11,188,255,.05),rgba(45,87,255,.08));
+      pointer-events:none;
+    }
+
+    @media (max-width:1050px){.home-prebuild-card{flex-basis:calc((100% - 36px) / 3)}.home-main-slider{aspect-ratio:21/9}}
+    @media (max-width:820px){.home-prebuild-card{flex-basis:calc((100% - 18px) / 2)}.section-head-row{align-items:flex-start;flex-direction:column}.home-main-slider{border-radius:22px}}
+    @media (max-width:560px){.home-banner-hero{padding:28px 0 14px}.home-main-slider{aspect-ratio:16/9}.home-prebuild-card{flex-basis:100%}.prebuild-home-section{padding:38px 0 24px}.home-prebuild-card-content{padding:15px}.home-prebuild-card h3{font-size:19px}}
+  </style>
+</head>
+<body data-page="home">
+  <header class="navbar">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Sandaruwan Computer Home">
+        <img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo">
+        <div class="brand-title">Sandaruwan Computer<span>Ratnapura PC Store</span></div>
+      </a>
+      <button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html" class="active">Home</a><a href="quotation.html" class="">Online Quotation</a><a href="products.html" class="">Products</a><a href="prebuild.html" class="">Pre Build PCs</a><a href="about.html" class="">About Us</a>
+        <a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a>
+        <a href="checkout.html" class="">Checkout</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="home-banner-hero">
+      <div class="container">
+        <div class="wide-banner-carousel home-main-slider" aria-label="Sandaruwan Computer promotional banners">
+          <div class="wide-banner-slide active"><img src="assets/img/01.jpg" alt="Online Quotation PDF Banner"></div>
+          <div class="wide-banner-slide"><img src="assets/img/02.jpg" alt="Used and New Computer Parts Banner"></div>
+          <div class="wide-banner-slide"><img src="assets/img/03.jpg" alt="Compatible PC Build Parts Banner"></div>
+          <div class="wide-banner-slide"><img src="assets/img/04.jpg" alt="WhatsApp Order Receipt Banner"></div>
+          <div class="slide-dots wide-dots" id="wideBannerDots" aria-hidden="true"></div>
+        </div>
+        <div class="hero-quick-actions" aria-label="Quick actions">
+          <a class="btn btn-primary" href="quotation.html">Get Quotation</a>
+          <a class="btn btn-ghost" href="products.html">Products</a>
+          <a class="btn btn-ghost" href="about.html">About Us</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="prebuild-home-section">
+      <div class="container">
+        <div class="section-head-row">
+          <div>
+            <span class="eyebrow">⚡ Ready PC Packages</span>
+            <h2>Pre Build PCs</h2>
+            <p>Office, study, gaming starter සහ custom PC builds සඳහා ready packages. එකවර products 4ක් show වෙන auto slider එකෙන් packages බලන්න.</p>
+          </div>
+          <a class="btn btn-ghost" href="prebuild.html">View All Pre Build PCs</a>
+        </div>
+
+        <div class="prebuild-home-window" aria-label="Pre Build PC product slider">
+          <div class="prebuild-home-track" id="homePrebuildTrack">
+            <a class="home-prebuild-card" href="prebuild.html">
+              <img src="assets/img/prebuild/prebuild-office-ddr3.jpg" alt="Office Value PC">
+              <div class="home-prebuild-card-content"><small>Best Budget</small><h3>Office Value PC</h3><div class="home-price">From Rs. 58,500</div><div class="home-spec">Core i5 4th Gen • 8GB DDR3 • SSD</div></div>
+            </a>
+            <a class="home-prebuild-card" href="prebuild.html">
+              <img src="assets/img/prebuild/prebuild-study-ddr4.jpg" alt="Study Home PC">
+              <div class="home-prebuild-card-content"><small>DDR4 Value</small><h3>Study / Home PC</h3><div class="home-price">From Rs. 79,500</div><div class="home-spec">Core i5 6th Gen • 8GB DDR4 • SSD</div></div>
+            </a>
+            <a class="home-prebuild-card" href="prebuild.html">
+              <img src="assets/img/prebuild/prebuild-gaming-starter.jpg" alt="Gaming Starter PC">
+              <div class="home-prebuild-card-content"><small>Popular</small><h3>Gaming Starter PC</h3><div class="home-price">From Rs. 128,000</div><div class="home-spec">Core i5 8th Gen • 16GB DDR4 • GPU option</div></div>
+            </a>
+            <a class="home-prebuild-card" href="prebuild.html">
+              <img src="assets/img/prebuild/prebuild-modern-i3.jpg" alt="Modern Desktop PC">
+              <div class="home-prebuild-card-content"><small>Newer Platform</small><h3>Modern Desktop PC</h3><div class="home-price">From Rs. 149,000</div><div class="home-spec">Core i3 10th Gen • DDR4 • Fast SSD</div></div>
+            </a>
+            <a class="home-prebuild-card" href="prebuild.html">
+              <img src="assets/img/prebuild/prebuild-custom.jpg" alt="Custom Build Package">
+              <div class="home-prebuild-card-content"><small>Build Your Way</small><h3>Custom Build Package</h3><div class="home-price">Custom price</div><div class="home-spec">Matched motherboard • RAM • SSD • accessories</div></div>
+            </a>
+          </div>
+        </div>
+        <div class="home-prebuild-progress" id="homePrebuildDots" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="after-prebuild-banners" aria-label="Featured wide banners">
+      <div class="container">
+        <div class="wide-image-stack">
+          <div class="wide-image-reveal"><img src="assets/img/A.jpg" alt="Used and New Computer Parts"></div>
+          <div class="wide-image-reveal"><img src="assets/img/B.jpg" alt="Matched Compatible PC Parts"></div>
+          <div class="wide-image-reveal"><img src="assets/img/C.jpg" alt="WhatsApp Order and Delivery Support"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="review-showcase" id="reviews">
+      <div class="container">
+        <div class="review-title-line"></div>
+        <h2 class="review-title">What Our Customers Are Saying</h2>
+        <div class="review-title-line"></div>
+        <div class="google-review-widget">
+          <div class="rating-summary">
+            <div>
+              <div class="rating-word">EXCELLENT</div>
+              <div class="big-stars" aria-label="5 star rating">★★★★★</div>
+              <p>Google customer feedback</p>
+              <div class="google-logo"><span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span></div>
+            </div>
+          </div>
+          <div class="review-track" id="reviewTrack">
+            <article class="review-card"><div class="review-head"><div class="avatar">C</div><div><h3>Computer Build Customer</h3><span>Recent Review</span></div><div class="g-mark">G</div></div><div class="review-stars">★★★★★ <span>✓</span></div><p>Friendly service, clean PC build and good explanation about parts before buying.</p><a data-config-link="reviewUrl" href="#">Read more</a></article>
+            <article class="review-card"><div class="review-head"><div class="avatar">R</div><div><h3>Repair Customer</h3><span>Recent Review</span></div><div class="g-mark">G</div></div><div class="review-stars">★★★★★ <span>✓</span></div><p>Fast support and fair pricing for computer repair and accessories.</p><a data-config-link="reviewUrl" href="#">Read more</a></article>
+            <article class="review-card"><div class="review-head"><div class="avatar">G</div><div><h3>Gaming PC Customer</h3><span>Recent Review</span></div><div class="g-mark">G</div></div><div class="review-stars">★★★★★ <span>✓</span></div><p>Good guidance for selecting compatible motherboard, processor and RAM.</p><a data-config-link="reviewUrl" href="#">Read more</a></article>
+            <article class="review-card"><div class="review-head"><div class="avatar">A</div><div><h3>Accessories Customer</h3><span>Recent Review</span></div><div class="g-mark">G</div></div><div class="review-stars">★★★★★ <span>✓</span></div><p>Helpful staff and quick WhatsApp response for product availability.</p><a data-config-link="reviewUrl" href="#">Read more</a></article>
+          </div>
+        </div>
+        <div class="review-bottom-row"><a class="verified-badge" data-config-link="reviewUrl" href="#">View Google Reviews ⓘ</a></div>
+        <div class="daily-deals-row"><h2>Deals of The Day</h2><a href="products.html">Go to Daily Deals Section <span>›</span></a></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container map-card">
+        <div class="card"><h2 style="margin-top:0">Visit Our Store</h2><p class="muted">Ratnapura computer parts, repairs සහ PC builds සඳහා location එක open කරලා shop එකට එන්න.</p><div class="action-row"><a class="btn btn-primary" data-config-link="locationUrl" href="#">View Location</a><a class="btn btn-ghost" data-config-link="reviewUrl" href="#">Google Reviews</a></div></div>
+        <a class="map-box" data-config-link="locationUrl" href="#"><span>📍 Sandaruwan Computer<br>Ratnapura</span></a>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="container">© Sandaruwan Computer • PC Store Ratnapura</div></footer>
+  <div class="toast" id="toast"></div>
+  <script src="assets/js/config.js"></script><script src="assets/js/app.js"></script>
+  <script>
+    (function(){
+      const track=document.getElementById('homePrebuildTrack');
+      const dotsWrap=document.getElementById('homePrebuildDots');
+      if(!track||!dotsWrap)return;
+      const cards=Array.from(track.children);
+      let index=0;
+      function visibleCount(){
+        if(window.innerWidth<=560)return 1;
+        if(window.innerWidth<=820)return 2;
+        if(window.innerWidth<=1050)return 3;
+        return 4;
+      }
+      function maxIndex(){return Math.max(0,cards.length-visibleCount());}
+      function renderDots(){
+        const total=maxIndex()+1;
+        dotsWrap.innerHTML=Array.from({length:total},(_,i)=>'<span class="home-prebuild-dot '+(i===index?'active':'')+'"></span>').join('');
+      }
+      function move(){
+        const gap=parseFloat(getComputedStyle(track).gap)||18;
+        const cardWidth=cards[0] ? cards[0].getBoundingClientRect().width : 0;
+        if(index>maxIndex())index=0;
+        track.style.transform='translateX('+(-(cardWidth+gap)*index)+'px)';
+        renderDots();
+      }
+      let timer=setInterval(function(){index=index>=maxIndex()?0:index+1;move();},3200);
+      window.addEventListener('resize',function(){clearTimeout(window.__homePrebuildResize);window.__homePrebuildResize=setTimeout(move,160);});
+      track.addEventListener('mouseenter',function(){clearInterval(timer);});
+      track.addEventListener('mouseleave',function(){timer=setInterval(function(){index=index>=maxIndex()?0:index+1;move();},3200);});
+      move();
+    })();
+
+    (function(){
+      const revealItems=document.querySelectorAll('.wide-image-reveal');
+      if(!revealItems.length)return;
+      if(!('IntersectionObserver' in window)){
+        revealItems.forEach(item=>item.classList.add('in-view'));
+        return;
+      }
+      const observer=new IntersectionObserver((entries)=>{
+        entries.forEach((entry)=>{
+          if(entry.isIntersecting){
+            entry.target.classList.add('in-view');
+            observer.unobserve(entry.target);
+          }
+        });
+      },{threshold:.18,rootMargin:'0px 0px -70px 0px'});
+      revealItems.forEach((item,index)=>{
+        item.style.transitionDelay=(index*.08)+'s';
+        observer.observe(item);
+      });
+    })();
+  </script>
+</body>
+</html>

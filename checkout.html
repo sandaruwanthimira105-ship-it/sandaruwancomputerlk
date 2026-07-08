@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Checkout | Sandaruwan Computer</title><link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css"></head>
+<body data-page="checkout">
+  <header class="navbar">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Sandaruwan Computer Home">
+        <img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo">
+        <div class="brand-title">Sandaruwan Computer<span>Checkout</span></div>
+      </a>
+      <button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html" class="">Home</a><a href="quotation.html" class="">Online Quotation</a><a href="products.html" class="">Products</a><a href="prebuild.html" class="">Pre Build PCs</a><a href="about.html" class="">About Us</a>
+        <a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a>
+        <a href="checkout.html" class="active">Checkout</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Checkout</span></h1><p>Customer details, bank payment details, order receipt සහ WhatsApp place order button.</p></div><a class="btn btn-ghost" href="cart.html">Back To Cart</a></div></section>
+    <section class="section"><div class="container checkout-layout">
+      <div class="card"><h2 style="margin-top:0">Customer Details</h2><div class="quote-form" style="grid-template-columns:1fr"><div class="field"><label>Name</label><input class="input" id="customerName" placeholder="Customer name"></div><div class="field"><label>Phone</label><input class="input" id="customerPhone" placeholder="07XXXXXXXX"></div><div class="field"><label>Address / Area</label><input class="input" id="customerAddress" placeholder="Ratnapura / Kuruwita / etc"></div><div class="field"><label>Note</label><textarea id="customerNote" rows="4" placeholder="Delivery / pickup / payment note"></textarea></div></div><div class="action-row"><button class="btn btn-whatsapp" id="placeOrderBtn">Place Order on WhatsApp</button><button class="btn btn-ghost" id="downloadReceiptBtn">Download Receipt PDF</button></div></div>
+      <div><div class="card bank-card"><h2 style="margin-top:0">Bank Details</h2><div class="bank-list" id="bankDetails"></div><div class="action-row"><a class="btn btn-ghost" data-config-link="locationUrl" href="#">View Location</a></div></div><div class="card" style="margin-top:18px"><h2 style="margin-top:0">Order Receipt</h2><div id="checkoutSummary"></div><div id="receiptBox" class="receipt" style="margin-top:16px;display:none"></div></div></div>
+    </div></section>
+  </main>
+  <footer class="footer"><div class="container">© Sandaruwan Computer • Checkout</div></footer>
+  <div class="toast" id="toast"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="assets/js/config.js"></script><script src="assets/js/app.js"></script>
+</body></html>

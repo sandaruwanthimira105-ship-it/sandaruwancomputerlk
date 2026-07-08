@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Manager | Sandaruwan Computer</title>
+  <link rel="icon" href="assets/img/logo.jpg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="admin">
+  <header class="navbar">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Sandaruwan Computer Home">
+        <img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo">
+        <div class="brand-title">Sandaruwan Computer<span>Product Manager</span></div>
+      </a>
+      <button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html">Home</a><a href="products.html">Products</a><a href="prebuild.html">Pre Build PCs</a><a href="quotation.html">Online Quotation</a><a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container page-title">
+        <div>
+          <h1><span class="title-gradient">Product Manager</span></h1>
+          <p>Product name, price, image, category, warranty, description සහ quotation compatibility settings add කරන්න. Save කළ products මේ browser එකේ website එකට පේනවා. Public website එකට permanent දාන්න “Download products.json” කරලා GitHub එකේ <b>data/products.json</b> replace කරන්න.</p>
+        </div>
+        <a class="btn btn-primary" href="products.html">View Products</a>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container admin-layout">
+        <form class="card admin-card" id="productManagerForm">
+          <h2 style="margin-top:0">Add / Update Product</h2>
+          <p class="muted">Product ID එක same නම් old product එක update වෙනවා. New product එකකට ID auto generate වෙනවා.</p>
+
+          <div class="admin-form-grid">
+            <div class="field"><label>Product Name</label><input class="input" id="pmName" required placeholder="Intel Core i5 4th Gen Processor"></div>
+            <div class="field"><label>Product ID</label><input class="input" id="pmId" placeholder="Auto generate / custom ID"></div>
+            <div class="field"><label>Price</label><input class="input" id="pmPrice" type="number" min="0" required placeholder="14500"></div>
+            <div class="field"><label>Stock</label><input class="input" id="pmStock" placeholder="5 / Contact"></div>
+            <div class="field"><label>Category</label><select id="pmCategory" required></select></div>
+            <div class="field"><label>Condition</label><select id="pmCondition"><option value="USED">USED</option><option value="NEW">NEW</option></select></div>
+            <div class="field"><label>Warranty Months</label><input class="input" id="pmWarrantyMonths" type="number" min="0" placeholder="1 / 3 / 6 / 12"></div>
+            <div class="field"><label>Image Path / URL</label><input class="input" id="pmImage" placeholder="assets/img/products/item.jpg"></div>
+            <div class="field wide"><label>Or Choose Image File</label><input class="input" id="pmImageFile" type="file" accept="image/*"><p class="field-hint">File choose කළාම image එක base64 ලෙස save/export වෙනවා. GitHub වලට image upload කරනවා නම් Image Path එක use කරන්න.</p></div>
+            <div class="field wide"><label>Description</label><textarea id="pmDescription" rows="4" placeholder="Product details, condition, performance, included items..."></textarea></div>
+          </div>
+
+          <h3>Processor / RAM / Motherboard Compatibility</h3>
+          <div class="admin-form-grid">
+            <div class="field"><label>Generation</label><select id="pmGeneration"><option value="">None</option><option value="2">2ND GEN</option><option value="3">3RD GEN</option><option value="4">4TH GEN</option><option value="5">5TH GEN</option><option value="6">6TH GEN</option><option value="7">7TH GEN</option><option value="8">8TH GEN</option><option value="9">9TH GEN</option><option value="10">10TH GEN</option></select></div>
+            <div class="field"><label>RAM Type</label><select id="pmMemory"><option value="">None</option><option>DDR2</option><option>DDR3</option><option>DDR4</option><option>DDR5</option></select></div>
+            <div class="field"><label>Chipset</label><input class="input" id="pmChipset" placeholder="H81 / B85 / H110 / B360"></div>
+            <div class="field"><label>Socket</label><input class="input" id="pmSocket" placeholder="LGA1150 / LGA1151"></div>
+          </div>
+
+          <h3>SSD / M.2 / NVMe Settings</h3>
+          <div class="compat-help">
+            <b>SSD product එකක් නම්</b> Storage Type select කරන්න. <b>Motherboard product එකක් නම්</b> M.2 SATA / NVMe support tick කරන්න. Quotation page එකේ SSD compatibility මේ fields අනුව filter වෙනවා.
+          </div>
+          <div class="admin-form-grid">
+            <div class="field"><label>Storage Type</label><select id="pmStorageType"><option value="">None</option><option value="SATA SSD">SATA SSD</option><option value="M.2 SSD">M.2 SSD</option><option value="NVME SSD">NVMe SSD</option></select></div>
+            <div class="field"><label>M.2 Slots</label><input class="input" id="pmM2Slots" type="number" min="0" placeholder="0 / 1 / 2"></div>
+            <div class="field check-field"><label><input type="checkbox" id="pmM2SataSupport"> Motherboard supports M.2 SATA SSD</label></div>
+            <div class="field check-field"><label><input type="checkbox" id="pmNvmeSupport"> Motherboard supports NVMe SSD</label></div>
+          </div>
+
+          <div class="admin-actions">
+            <button class="btn btn-primary" type="submit">Add To Products</button>
+            <button class="btn btn-ghost" type="button" id="pmResetBtn">Clear Form</button>
+          </div>
+        </form>
+
+        <aside class="card admin-side">
+          <h2 style="margin-top:0">Saved Products</h2>
+          <p class="muted">Local manager එකෙන් add කරපු products මෙතන පේනවා.</p>
+          <div class="admin-actions admin-actions-vertical">
+            <button class="btn btn-primary" id="downloadJsonBtn">Download products.json</button>
+            <button class="btn btn-ghost" id="copyJsonBtn">Copy JSON</button>
+            <button class="btn btn-danger" id="clearLocalProductsBtn">Clear Local Products</button>
+          </div>
+          <div class="compat-help warn-box"><b>GitHub Pages note:</b> මේක static website එකක් නිසා admin page එකෙන් server එකට directly save කරන්න බැහැ. Download කරන <b>products.json</b> file එක GitHub repo එකේ <b>data/products.json</b> replace කළාම public website එකට permanent වෙනවා.</div>
+          <div id="adminProductList" class="admin-product-list"></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer"><div class="container">© Sandaruwan Computer • Product Manager</div></footer>
+  <div class="toast" id="toast"></div>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+  (function(){
+    const KEY='sandaruwan_computer_admin_products_v1';
+    const categories=['PROCESSOR','MOTHERBOARD','CPU COOLER','RAM','HARD DISK','SSD','POWER SUPPLY','CABLES','MONITOR','KEYBOARD','MOUSE','SPEAKER','HEADSET','CASING'];
+    const $=(s,r=document)=>r.querySelector(s);
+    const clean=v=>String(v??'').trim();
+    const upper=v=>clean(v).toUpperCase();
+    const toast=(msg)=>{const t=$('#toast');if(!t){alert(msg);return}t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2300)};
+    const esc=s=>clean(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    let imageData='';
+    let baseProducts=[];
+
+    function getLocal(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
+    function setLocal(items){localStorage.setItem(KEY,JSON.stringify(items));renderList()}
+    function genId(name,cat){return (upper(cat||'ITEM').replace(/[^A-Z0-9]/g,'').slice(0,4)||'ITEM')+'-'+upper(name).replace(/[^A-Z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,42)+'-'+Math.floor(100+Math.random()*900)}
+    function normalizeProduct(p){return {
+      id:clean(p.id)||genId(p.name,p.category), name:clean(p.name), category:upper(p.category), condition:upper(p.condition||'USED'), price:Number(p.price||0), generation:clean(p.generation), memory:upper(p.memory), chipset:upper(p.chipset), socket:upper(p.socket), stock:clean(p.stock), image:clean(p.image)||'assets/img/logo.jpg', description:clean(p.description), warrantyMonths:clean(p.warrantyMonths), storageType:clean(p.storageType), m2SataSupport:!!p.m2SataSupport, nvmeSupport:!!p.nvmeSupport, m2Slots:clean(p.m2Slots)
+    }}
+    function productFromForm(){return normalizeProduct({
+      id:$('#pmId').value, name:$('#pmName').value, category:$('#pmCategory').value, condition:$('#pmCondition').value, price:$('#pmPrice').value, generation:$('#pmGeneration').value, memory:$('#pmMemory').value, chipset:$('#pmChipset').value, socket:$('#pmSocket').value, stock:$('#pmStock').value, image:imageData||$('#pmImage').value, description:$('#pmDescription').value, warrantyMonths:$('#pmWarrantyMonths').value, storageType:$('#pmStorageType').value, m2SataSupport:$('#pmM2SataSupport').checked, nvmeSupport:$('#pmNvmeSupport').checked, m2Slots:$('#pmM2Slots').value
+    })}
+    function fillForm(p){
+      $('#pmId').value=p.id||'';$('#pmName').value=p.name||'';$('#pmPrice').value=p.price||'';$('#pmStock').value=p.stock||'';$('#pmCategory').value=p.category||'PROCESSOR';$('#pmCondition').value=p.condition||'USED';$('#pmWarrantyMonths').value=p.warrantyMonths||'';$('#pmImage').value=(p.image&&String(p.image).startsWith('data:'))?'':(p.image||'');$('#pmDescription').value=p.description||'';$('#pmGeneration').value=p.generation||'';$('#pmMemory').value=p.memory||'';$('#pmChipset').value=p.chipset||'';$('#pmSocket').value=p.socket||'';$('#pmStorageType').value=p.storageType||'';$('#pmM2Slots').value=p.m2Slots||'';$('#pmM2SataSupport').checked=!!p.m2SataSupport;$('#pmNvmeSupport').checked=!!p.nvmeSupport;imageData=(p.image&&String(p.image).startsWith('data:'))?p.image:'';window.scrollTo({top:0,behavior:'smooth'});
+    }
+    function clearForm(){document.getElementById('productManagerForm').reset();$('#pmCategory').value='PROCESSOR';$('#pmCondition').value='USED';imageData='';}
+    function renderList(){
+      const list=$('#adminProductList');const items=getLocal();
+      list.innerHTML=items.length?items.map(p=>`<div class="admin-product-item"><img src="${esc(p.image||'assets/img/logo.jpg')}" onerror="this.src='assets/img/logo.jpg'" alt=""><div><b>${esc(p.name)}</b><span>${esc(p.category)} • Rs. ${Number(p.price||0).toLocaleString('en-LK')} ${p.storageType?'• '+esc(p.storageType):''}</span></div><button class="btn btn-ghost btn-small" data-edit="${esc(p.id)}">Edit</button><button class="btn btn-danger btn-small" data-delete="${esc(p.id)}">Delete</button></div>`).join(''):'<div class="empty-state">No local products yet.</div>';
+    }
+    async function loadBase(){try{const r=await fetch('data/products.json',{cache:'no-store'});if(r.ok)baseProducts=await r.json()}catch(e){baseProducts=[]}}
+    function mergedProducts(){const map=new Map((baseProducts||[]).map(p=>[p.id,p]));getLocal().forEach(p=>map.set(p.id,p));return Array.from(map.values())}
+    function download(filename,text){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+
+    $('#pmCategory').innerHTML=categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+    $('#pmImageFile').addEventListener('change',e=>{const file=e.target.files&&e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{imageData=reader.result;$('#pmImage').value='';toast('Image added to product data')};reader.readAsDataURL(file)});
+    $('#productManagerForm').addEventListener('submit',e=>{e.preventDefault();const p=productFromForm();if(!p.name||!p.category){toast('Product name and category required');return}const items=getLocal();const i=items.findIndex(x=>x.id===p.id);if(i>=0)items[i]=p;else items.push(p);setLocal(items);clearForm();toast('Product saved')});
+    $('#pmResetBtn').addEventListener('click',clearForm);
+    $('#adminProductList').addEventListener('click',e=>{const edit=e.target.closest('[data-edit]');const del=e.target.closest('[data-delete]');if(edit){const p=getLocal().find(x=>x.id===edit.dataset.edit);if(p)fillForm(p)}if(del){if(confirm('Delete this local product?'))setLocal(getLocal().filter(x=>x.id!==del.dataset.delete))}});
+    $('#clearLocalProductsBtn').addEventListener('click',()=>{if(confirm('Clear all local products?'))setLocal([])});
+    $('#downloadJsonBtn').addEventListener('click',()=>download('products.json',JSON.stringify(mergedProducts(),null,2)));
+    $('#copyJsonBtn').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(JSON.stringify(mergedProducts(),null,2));toast('JSON copied')}catch(e){toast('Copy failed. Use Download products.json')}});
+    loadBase().then(renderList);
+  })();
+  </script>
+</body>
+</html>
