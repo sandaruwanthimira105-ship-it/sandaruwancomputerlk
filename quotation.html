@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Online Quotation | Sandaruwan Computer</title><link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css"></head>
+<body data-page="quotation">
+  <header class="navbar">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="Sandaruwan Computer Home">
+        <img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo">
+        <div class="brand-title">Sandaruwan Computer<span>Online Quotation</span></div>
+      </a>
+      <button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button>
+      <nav class="nav-links" id="navLinks">
+        <a href="index.html" class="">Home</a><a href="quotation.html" class="active">Online Quotation</a><a href="products.html" class="">Products</a><a href="prebuild.html" class="">Pre Build PCs</a><a href="about.html" class="">About Us</a>
+        <a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a>
+        <a href="checkout.html" class="">Checkout</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Online Quotation</span></h1><p>Processor එක තෝරන්න. ඒකට match වෙන motherboard සහ RAM විතරක් auto filter වෙයි. Customer details එක්ක professional colour PDF quotation එක download කරන්න.</p></div><a class="btn btn-ghost" href="products.html">Browse Products</a></div></section>
+    <section class="section">
+      <div class="container quote-layout">
+        <div class="card">
+          <h2 style="margin-top:0">Customer Details</h2>
+          <p class="muted">PDF quotation එක complete වෙන්න මේ details fill කරන්න.</p>
+          <div class="quote-form" style="margin-bottom:22px">
+            <div class="field"><label>Customer Name</label><input class="input" id="quoteCustomerName" placeholder="Enter customer name"></div>
+            <div class="field"><label>Phone Number</label><input class="input" id="quoteCustomerPhone" placeholder="07XXXXXXXX"></div>
+            <div class="field"><label>Email Address</label><input class="input" id="quoteCustomerEmail" type="email" placeholder="customer@email.com"></div>
+            <div class="field"><label>Address</label><input class="input" id="quoteCustomerAddress" placeholder="Customer address / area"></div>
+          </div>
+          <h2>Select Build Components</h2>
+          <p class="muted">Required parts select කරලා optional accessories අවශ්‍ය නම් add කරන්න.</p>
+          <div class="quote-form">
+            <div class="field wide"><label>Processor</label><select id="quoteProcessor"><option value="">Select processor</option></select></div>
+            <div class="field"><label>Motherboard</label><select id="quoteMotherboard" disabled><option value="">Select processor first</option></select></div>
+            <div class="field"><label>RAM</label><select id="quoteRam" disabled><option value="">Select processor first</option></select></div>
+            <div class="field"><label>CPU Cooler</label><select data-quote-select="CPU COOLER"><option value="">Skip CPU Cooler</option></select></div>
+            <div class="field"><label>Casing</label><select data-quote-select="CASING"><option value="">Skip Casing</option></select></div>
+            <div class="field"><label>SSD</label><select data-quote-select="SSD"><option value="">Skip SSD</option></select></div>
+            <div class="field"><label>Hard Disk</label><select data-quote-select="HARD DISK"><option value="">Skip Hard Disk</option></select></div>
+            <div class="field"><label>Power Supply</label><select data-quote-select="POWER SUPPLY"><option value="">Skip Power Supply</option></select></div>
+            <div class="field"><label>Cables</label><select data-quote-select="CABLES"><option value="">Skip Cables</option></select></div>
+            <div class="field"><label>Monitor</label><select data-quote-select="MONITOR"><option value="">Skip Monitor</option></select></div>
+            <div class="field"><label>Keyboard</label><select data-quote-select="KEYBOARD"><option value="">Skip Keyboard</option></select></div>
+            <div class="field"><label>Mouse</label><select data-quote-select="MOUSE"><option value="">Skip Mouse</option></select></div>
+            <div class="field"><label>Speaker</label><select data-quote-select="SPEAKER"><option value="">Skip Speaker</option></select></div>
+            <div class="field"><label>Headset</label><select data-quote-select="HEADSET"><option value="">Skip Headset</option></select></div>
+            <div class="field wide"><div id="compatNote" class="compat-box warn-box">Processor එක select කළාම compatible motherboard සහ RAM පෙන්වයි.</div></div>
+          </div>
+        </div>
+        <aside class="card">
+          <h2 style="margin-top:0">Quotation Summary</h2>
+          <div class="table-wrap"><table id="quoteTable"><thead><tr><th>Item</th><th>Condition</th><th>Price</th></tr></thead><tbody></tbody></table></div>
+          <div class="total-row"><span>Total Estimate</span><strong id="quoteTotal">Rs. 0</strong></div>
+          <div class="action-row"><button class="btn btn-primary" id="addQuoteToCartBtn">Add Quote To Cart</button><button class="btn btn-ghost" id="downloadQuotePdfBtn">Download Colour PDF</button><a class="btn btn-whatsapp" href="checkout.html">Checkout</a></div>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <footer class="footer"><div class="container">© Sandaruwan Computer • Online Quotation</div></footer>
+  <div class="toast" id="toast"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="assets/js/config.js"></script><script src="assets/js/app.js"></script>
+</body></html>
