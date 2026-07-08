@@ -1,86 +1,12 @@
 <!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Online Quotation | Sandaruwan Computer</title><link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Online Quotation | Sandaruwan Computer</title><link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css">
+<style>
+.quote-form-clean .field{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:12px}.quote-section-title{grid-column:1/-1;font-weight:900;font-size:15px;color:#fff;margin:8px 0 0;padding:12px 14px;border-radius:16px;background:linear-gradient(135deg,rgba(11,188,255,.18),rgba(38,104,255,.12));border:1px solid rgba(11,188,255,.2)}.condition-switch{display:flex;gap:6px;margin:8px 0 10px;background:rgba(2,8,23,.55);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:4px}.condition-switch button{border:0;background:transparent;color:#a8bdd8;font-weight:900;font-size:11px;padding:8px 10px;border-radius:999px;cursor:pointer;flex:1;white-space:nowrap}.condition-switch button.active{background:linear-gradient(135deg,#0bbcff,#2563eb);color:#fff;box-shadow:0 6px 18px rgba(11,188,255,.22)}.quote-form select,.quote-form .input{width:100%}.select-qty-row{display:grid;grid-template-columns:1fr 1.4fr 92px;gap:8px}.select-qty-row select:only-child{grid-column:1/-1}.quote-cable-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.quote-cable-item{display:grid;grid-template-columns:auto 1fr 75px;align-items:center;gap:8px;background:rgba(2,8,23,.45);border:1px solid rgba(255,255,255,.08);padding:10px;border-radius:14px;font-weight:800}.quote-cable-item input[type="checkbox"]{width:18px;height:18px}.quote-qty-input{min-width:70px}@media(max-width:720px){.select-qty-row{grid-template-columns:1fr}.quote-cable-grid{grid-template-columns:1fr}.condition-switch button{font-size:10px;padding:7px 8px}}
+</style></head>
 <body data-page="quotation">
-  <header class="navbar">
-    <div class="container nav-wrap">
-      <a class="brand" href="index.html" aria-label="Sandaruwan Computer Home">
-        <img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo">
-        <div class="brand-title">Sandaruwan Computer<span>Online Quotation</span></div>
-      </a>
-      <button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button>
-      <nav class="nav-links" id="navLinks">
-        <a href="index.html" class="">Home</a><a href="quotation.html" class="active">Online Quotation</a><a href="products.html" class="">Products</a><a href="prebuild.html" class="">Pre Build PCs</a><a href="about.html" class="">About Us</a>
-        <a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a>
-        <a href="checkout.html" class="">Checkout</a>
-      </nav>
-    </div>
-  </header>
-  <main>
-    <section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Online Quotation</span></h1><p>Create a professional PC quotation with compatible parts, customer details and a downloadable colour PDF.</p></div><a class="btn btn-ghost" href="products.html">Browse Products</a></div></section>
-    <section class="section">
-      <div class="container quote-layout">
-        <div class="card">
-          <h2 style="margin-top:0">Customer Details</h2>
-          <p class="muted">Enter customer details for the final quotation PDF.</p>
-          <div class="quote-form" style="margin-bottom:22px">
-            <div class="field"><label>Customer Name</label><input class="input" id="quoteCustomerName" placeholder="Enter customer name"></div>
-            <div class="field"><label>Phone Number</label><input class="input" id="quoteCustomerPhone" placeholder="07XXXXXXXX"></div>
-            <div class="field"><label>Email Address</label><input class="input" id="quoteCustomerEmail" type="email" placeholder="customer@email.com"></div>
-            <div class="field"><label>Address</label><input class="input" id="quoteCustomerAddress" placeholder="Customer address / area"></div>
-          </div>
-          <h2>Select Build Components</h2>
-          <p class="muted">Select the required build parts and optional accessories below.</p>
-          <div class="quote-form quote-form-clean">
-            <div class="field"><label>Processor Condition</label><select data-condition-for="PROCESSOR"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field wide"><label>Processor</label><select id="quoteProcessor"><option value="">Select processor</option></select></div>
-            <div class="field"><label>Motherboard Condition</label><select data-condition-for="MOTHERBOARD"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Motherboard</label><select id="quoteMotherboard" disabled><option value="">Select processor first</option></select></div>
-            <div class="field"><label>RAM Slot Option</label><select id="quoteRamSlot" disabled><option value="">Select motherboard first</option></select></div>
-            <div class="field"><label>RAM Condition</label><select data-condition-for="RAM"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>RAM</label><div class="select-qty-row"><select id="quoteRam" disabled><option value="">Select processor first</option></select><input class="input quote-qty-input" id="quoteRamQty" type="number" min="1" value="1" title="RAM Qty"></div></div>
-            <div class="field"><label>CPU Cooler Condition</label><select data-condition-for="CPU COOLER"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>CPU Cooler</label><select data-quote-select="CPU COOLER"><option value="">Skip CPU Cooler</option></select></div>
-            <div class="field"><label>Casing Condition</label><select data-condition-for="CASING"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Casing</label><select data-quote-select="CASING"><option value="">Skip Casing</option></select></div>
-            <div class="field"><label>SSD Condition</label><select data-condition-for="SSD"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>SSD / Storage</label><div class="select-qty-row"><select id="quoteSsd" data-quote-select="SSD"><option value="">Skip SSD</option></select><input class="input quote-qty-input" id="quoteSsdQty" type="number" min="1" value="1" title="SSD Qty"></div></div>
-            <div class="field"><label>Hard Disk Condition</label><select data-condition-for="HARD DISK"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Hard Disk</label><div class="select-qty-row"><select id="quoteHardDisk" data-quote-select="HARD DISK"><option value="">Skip Hard Disk</option></select><input class="input quote-qty-input" id="quoteHardDiskQty" type="number" min="1" value="1" title="HDD Qty"></div></div>
-            <div class="field"><label>Power Supply Condition</label><select data-condition-for="POWER SUPPLY"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Power Supply</label><select data-quote-select="POWER SUPPLY"><option value="">Skip Power Supply</option></select></div>
-            <div class="field"><label>Monitor Condition</label><select data-condition-for="MONITOR"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Monitor Size</label><select id="quoteMonitorSize"><option value="">Any Size</option><option value="19">19 inch</option><option value="20">20 inch</option><option value="22">22 inch</option><option value="24">24 inch</option><option value="27">27 inch</option><option value="29">29 inch</option><option value="32">32 inch</option></select></div>
-            <div class="field wide"><label>Monitor Brand / Model</label><select id="quoteMonitor" data-quote-select="MONITOR"><option value="">Skip Monitor</option></select></div>
-            <div class="field wide"><label>Cable Add-ons</label>
-              <div class="quote-cable-grid">
-                <label class="quote-cable-item"><input type="checkbox" data-cable-option="POWER CABLE"><span>Power Cable</span><input class="input quote-qty-input" type="number" min="1" value="1" data-cable-qty="POWER CABLE" title="Power Cable Qty"></label>
-                <label class="quote-cable-item"><input type="checkbox" data-cable-option="VGA CABLE"><span>VGA Cable</span><input class="input quote-qty-input" type="number" min="1" value="1" data-cable-qty="VGA CABLE" title="VGA Cable Qty"></label>
-                <label class="quote-cable-item"><input type="checkbox" data-cable-option="HDMI CABLE"><span>HDMI Cable</span><input class="input quote-qty-input" type="number" min="1" value="1" data-cable-qty="HDMI CABLE" title="HDMI Cable Qty"></label>
-                <label class="quote-cable-item"><input type="checkbox" data-cable-option="DVI CABLE"><span>DVI Cable</span><input class="input quote-qty-input" type="number" min="1" value="1" data-cable-qty="DVI CABLE" title="DVI Cable Qty"></label>
-              </div>
-            </div>
-            <div class="field"><label>Keyboard Condition</label><select data-condition-for="KEYBOARD"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Keyboard</label><select data-quote-select="KEYBOARD"><option value="">Skip Keyboard</option></select></div>
-            <div class="field"><label>Mouse Condition</label><select data-condition-for="MOUSE"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Mouse</label><select data-quote-select="MOUSE"><option value="">Skip Mouse</option></select></div>
-            <div class="field"><label>Speaker Condition</label><select data-condition-for="SPEAKER"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Speaker</label><select data-quote-select="SPEAKER"><option value="">Skip Speaker</option></select></div>
-            <div class="field"><label>Headset Condition</label><select data-condition-for="HEADSET"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
-            <div class="field"><label>Headset</label><select data-quote-select="HEADSET"><option value="">Skip Headset</option></select></div>
-          </div>
-        </div>
-        <aside class="card">
-          <h2 style="margin-top:0">Quotation Summary</h2>
-          <div class="table-wrap"><table id="quoteTable"><thead><tr><th>Item</th><th>Qty</th><th>Condition</th><th>Price</th></tr></thead><tbody></tbody></table></div>
-          <div class="total-row"><span>Total Estimate</span><strong id="quoteTotal">Rs. 0</strong></div>
-          <div class="action-row"><button class="btn btn-primary" id="addQuoteToCartBtn">Add Quote To Cart</button><button class="btn btn-ghost" id="downloadQuotePdfBtn">Download Colour PDF</button><a class="btn btn-whatsapp" href="checkout.html">Checkout</a></div>
-        </aside>
-      </div>
-    </section>
-  </main>
-  <footer class="footer"><div class="container">© Sandaruwan Computer • Online Quotation</div></footer>
-  <div class="toast" id="toast"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="assets/js/config.js?v=27"></script><script src="assets/js/app.js?v=27"></script>
+<header class="navbar"><div class="container nav-wrap"><a class="brand" href="index.html"><img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo"><div class="brand-title">Sandaruwan Computer<span>Online Quotation</span></div></a><button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button><nav class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="quotation.html" class="active">Online Quotation</a><a href="products.html">Products</a><a href="prebuild.html">Pre Build PCs</a><a href="about.html">About Us</a><a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a><a href="checkout.html">Checkout</a></nav></div></header>
+<main>
+<section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Online Quotation</span></h1><p>Create a professional PC quotation with matching components, quantities and a downloadable PDF.</p></div><a class="btn btn-ghost" href="products.html">Browse Products</a></div></section>
+<section class="section"><div class="container quote-layout"><div class="card"><h2 style="margin-top:0">Customer Details</h2><div class="quote-form" style="margin-bottom:22px"><div class="field"><label>Customer Name</label><input class="input" id="quoteCustomerName" placeholder="Enter customer name"></div><div class="field"><label>Phone Number</label><input class="input" id="quoteCustomerPhone" placeholder="07XXXXXXXX"></div><div class="field"><label>Email Address</label><input class="input" id="quoteCustomerEmail" type="email" placeholder="customer@email.com"></div><div class="field"><label>Address</label><input class="input" id="quoteCustomerAddress" placeholder="Customer address / area"></div></div><h2>Select Build Components</h2><div class="quote-form quote-form-clean" id="quoteComponentForm"><div class="loading-state">Loading quotation form...</div></div></div><aside class="card"><h2 style="margin-top:0">Quotation Summary</h2><div class="table-wrap"><table id="quoteTable"><thead><tr><th>Item</th><th>Qty</th><th>Condition</th><th>Subtotal</th></tr></thead><tbody></tbody></table></div><div class="total-row"><span>Total Estimate</span><strong id="quoteTotal">Rs. 0</strong></div><div class="action-row"><button class="btn btn-primary" id="addQuoteToCartBtn">Add Quote To Cart</button><button class="btn btn-ghost" id="downloadQuotePdfBtn">Download Colour PDF</button><a class="btn btn-whatsapp" href="checkout.html">Checkout</a></div></aside></div></section>
+</main><footer class="footer"><div class="container">© Sandaruwan Computer • Online Quotation</div></footer><div class="toast" id="toast"></div><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script><script src="assets/js/config.js?v=29"></script><script src="assets/js/app.js?v=29"></script>
 </body></html>

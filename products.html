@@ -1,28 +1,33 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Products | Sandaruwan Computer</title><link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Products | Sandaruwan Computer</title><link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css">
+<style>
+.products-shell{display:grid;grid-template-columns:250px 1fr;gap:22px;align-items:start}.category-sidebar{position:sticky;top:92px;background:rgba(5,10,28,.72);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:14px;box-shadow:0 18px 50px rgba(0,0,0,.22)}.category-sidebar h3{margin:6px 8px 12px;font-size:16px}.category-link{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;background:transparent;color:#dbeafe;text-align:left;padding:10px 12px;border-radius:14px;font-weight:700;cursor:pointer}.category-link span{font-size:12px;color:#9fb5d1}.category-link:hover,.category-link.active{background:linear-gradient(135deg,rgba(11,188,255,.18),rgba(38,104,255,.12));color:#fff}.product-main{min-width:0}.product-filter-bar{display:grid;grid-template-columns:1.6fr repeat(4,minmax(130px,1fr));gap:10px;margin-bottom:14px}.product-filter-bar .input,.product-filter-bar select{width:100%}.filter-pill-row{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}.filter-pill-row [data-filter-box]{min-width:140px}.filter-pill-row select{width:100%;min-height:42px}.product-result-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px}.product-result-head h2{margin:0}.product-result-head .muted{font-weight:700}@media(max-width:900px){.products-shell{grid-template-columns:1fr}.category-sidebar{position:relative;top:auto}.category-list{display:flex;overflow:auto;gap:8px;padding-bottom:4px}.category-link{min-width:160px}.product-filter-bar{grid-template-columns:1fr 1fr}.filter-pill-row [data-filter-box]{min-width:calc(50% - 5px);flex:1}}@media(max-width:520px){.product-filter-bar{grid-template-columns:1fr}.filter-pill-row [data-filter-box]{min-width:100%}}
+</style></head>
 <body data-page="products">
-  <header class="navbar">
-    <div class="container nav-wrap">
-      <a class="brand" href="index.html" aria-label="Sandaruwan Computer Home">
-        <img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo">
-        <div class="brand-title">Sandaruwan Computer<span>Products Store</span></div>
-      </a>
-      <button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button>
-      <nav class="nav-links" id="navLinks">
-        <a href="index.html" class="">Home</a><a href="quotation.html" class="">Online Quotation</a><a href="products.html" class="active">Products</a><a href="prebuild.html" class="">Pre Build PCs</a><a href="about.html" class="">About Us</a>
-        <a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a>
-        <a href="checkout.html" class="">Checkout</a>
-      </nav>
-    </div>
-  </header>
+  <header class="navbar"><div class="container nav-wrap"><a class="brand" href="index.html"><img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo"><div class="brand-title">Sandaruwan Computer<span>Products Store</span></div></a><button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button><nav class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="quotation.html">Online Quotation</a><a href="products.html" class="active">Products</a><a href="prebuild.html">Pre Build PCs</a><a href="about.html">About Us</a><a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a><a href="checkout.html">Checkout</a></nav></div></header>
   <main>
-    <section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Products</span></h1><p>Used / Brand New computer parts, DDR2-DDR5 RAM filters, 2nd Gen to 14th Gen processor filters සහ category search.</p></div><a class="btn btn-primary" href="quotation.html">Build Quotation</a></div></section>
-    <section class="section"><div class="container">
-      <div class="toolbar"><input class="input" id="productSearch" type="search" placeholder="Search product name, chipset, RAM type..."><select id="categoryFilter"><option value="">All Categories</option></select><select id="conditionFilter"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select><select id="memoryFilter"><option value="">DDR2 - DDR5</option><option>DDR2</option><option>DDR3</option><option>DDR4</option><option>DDR5</option></select><select id="generationFilter"><option value="">Core 2 Duo - 14th Gen</option><option value="CORE2DUO">CORE 2 DUO</option><option value="2">2ND GEN</option><option value="3">3RD GEN</option><option value="4">4TH GEN</option><option value="5">5TH GEN</option><option value="6">6TH GEN</option><option value="7">7TH GEN</option><option value="8">8TH GEN</option><option value="9">9TH GEN</option><option value="10">10TH GEN</option><option value="11">11TH GEN</option><option value="12">12TH GEN</option><option value="13">13TH GEN</option><option value="14">14TH GEN</option></select><select id="storageFilter"><option value="">SSD Type</option><option value="SATA SSD">SATA SSD</option><option value="M.2 SSD">M.2 SSD</option><option value="NVME SSD">NVMe SSD</option></select><select id="monitorSizeFilter"><option value="">Monitor Size</option><option value="19">19 inch</option><option value="20">20 inch</option><option value="22">22 inch</option><option value="24">24 inch</option><option value="27">27 inch</option><option value="29">29 inch</option><option value="32">32 inch</option></select></div>
-      <div class="product-head-row"><h2 style="margin:0">Available Products</h2><div class="result-count" id="resultCount">Loading...</div></div><div id="productsGrid" class="product-grid"></div>
+    <section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Products</span></h1><p>Browse used and brand-new computer parts with category specific filters.</p></div><a class="btn btn-primary" href="quotation.html">Build Quotation</a></div></section>
+    <section class="section"><div class="container products-shell">
+      <aside class="category-sidebar"><h3>Categories</h3><div class="category-list" id="categoryList"></div></aside>
+      <div class="product-main">
+        <div class="product-filter-bar"><input class="input" id="productSearch" type="search" placeholder="Search product name, brand, model..."><select class="product-filter" id="conditionFilter"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select><select class="product-filter" id="brandFilter"><option value="">Brand</option></select><select class="product-filter" id="modelFilter"><option value="">Model / Type</option></select><select class="product-filter" id="processorGenFilter"><option value="">Processor Gen</option></select></div>
+        <div class="filter-pill-row">
+          <div data-filter-box="generation"><select class="product-filter" id="generationFilter"><option value="">Board Gen</option></select></div>
+          <div data-filter-box="ramSupport"><select class="product-filter" id="ramSupportFilter"><option value="">RAM Support</option></select></div>
+          <div data-filter-box="ramSlot"><select class="product-filter" id="ramSlotFilter"><option value="">RAM Slot</option></select></div>
+          <div data-filter-box="storage"><select class="product-filter" id="storageFilter"><option value="">SSD Support</option></select></div>
+          <div data-filter-box="ssdType"><select class="product-filter" id="ssdTypeFilter"><option value="">SSD Type</option></select></div>
+          <div data-filter-box="monitorSize"><select class="product-filter" id="monitorSizeFilter"><option value="">Monitor Size</option></select></div>
+          <div data-filter-box="capacity"><select class="product-filter" id="capacityFilter"><option value="">Capacity / Memory</option></select></div>
+          <div data-filter-box="speed"><select class="product-filter" id="speedFilter"><option value="">Speed</option></select></div>
+          <div data-filter-box="watt"><select class="product-filter" id="wattFilter"><option value="">Watt</option></select></div>
+          <div data-filter-box="rgb"><select class="product-filter" id="rgbFilter"><option value="">RGB / Non RGB</option></select></div>
+          <div data-filter-box="socketGen"><select class="product-filter" id="socketGenFilter"><option value="">Socket / Gen</option></select></div>
+        </div>
+        <div class="product-result-head"><h2>Available Products</h2><span class="muted" id="productCount">Loading...</span></div>
+        <div class="products-grid" id="productsGrid"><div class="loading-state">Loading products...</div></div>
+      </div>
     </div></section>
   </main>
-  <footer class="footer"><div class="container">© Sandaruwan Computer • Products</div></footer>
-  <div class="toast" id="toast"></div>
-  <script src="assets/js/config.js?v=27"></script><script src="assets/js/app.js?v=27"></script>
+  <footer class="footer"><div class="container">© Sandaruwan Computer • Products</div></footer><div class="toast" id="toast"></div><script src="assets/js/config.js?v=29"></script><script src="assets/js/app.js?v=29"></script>
 </body></html>
