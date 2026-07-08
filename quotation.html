@@ -17,12 +17,12 @@
     </div>
   </header>
   <main>
-    <section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Online Quotation</span></h1><p>Processor එක තෝරන්න. ඒකට match වෙන motherboard සහ RAM විතරක් auto filter වෙයි. Customer details එක්ක professional colour PDF quotation එක download කරන්න.</p></div><a class="btn btn-ghost" href="products.html">Browse Products</a></div></section>
+    <section class="page-hero"><div class="container page-title"><div><h1><span class="title-gradient">Online Quotation</span></h1><p>Create a professional PC quotation with compatible parts, customer details and a downloadable colour PDF.</p></div><a class="btn btn-ghost" href="products.html">Browse Products</a></div></section>
     <section class="section">
       <div class="container quote-layout">
         <div class="card">
           <h2 style="margin-top:0">Customer Details</h2>
-          <p class="muted">PDF quotation එක complete වෙන්න මේ details fill කරන්න.</p>
+          <p class="muted">Enter customer details for the final quotation PDF.</p>
           <div class="quote-form" style="margin-bottom:22px">
             <div class="field"><label>Customer Name</label><input class="input" id="quoteCustomerName" placeholder="Enter customer name"></div>
             <div class="field"><label>Phone Number</label><input class="input" id="quoteCustomerPhone" placeholder="07XXXXXXXX"></div>
@@ -30,17 +30,28 @@
             <div class="field"><label>Address</label><input class="input" id="quoteCustomerAddress" placeholder="Customer address / area"></div>
           </div>
           <h2>Select Build Components</h2>
-          <p class="muted">Required parts select කරලා optional accessories අවශ්‍ය නම් add කරන්න.</p>
-          <div class="quote-form">
+          <p class="muted">Select the required build parts and optional accessories below.</p>
+          <div class="quote-form quote-form-clean">
+            <div class="field"><label>Processor Condition</label><select data-condition-for="PROCESSOR"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field wide"><label>Processor</label><select id="quoteProcessor"><option value="">Select processor</option></select></div>
+            <div class="field"><label>Motherboard Condition</label><select data-condition-for="MOTHERBOARD"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>Motherboard</label><select id="quoteMotherboard" disabled><option value="">Select processor first</option></select></div>
-            <div class="field"><label>RAM Slot Option</label><select id="quoteRamSlot" disabled><option value="">Select motherboard first</option></select><p class="field-hint">RAM Slot 4 option select කළොත් quotation total එකට Rs. 500 add වෙනවා.</p></div>
-            <div class="field"><label>RAM</label><div class="select-qty-row"><select id="quoteRam" disabled><option value="">Select processor first</option></select><input class="input quote-qty-input" id="quoteRamQty" type="number" min="1" value="1" title="RAM Qty"></div><p class="field-hint">RAM quantity add කරන්න.</p></div>
+            <div class="field"><label>RAM Slot Option</label><select id="quoteRamSlot" disabled><option value="">Select motherboard first</option></select></div>
+            <div class="field"><label>RAM Condition</label><select data-condition-for="RAM"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
+            <div class="field"><label>RAM</label><div class="select-qty-row"><select id="quoteRam" disabled><option value="">Select processor first</option></select><input class="input quote-qty-input" id="quoteRamQty" type="number" min="1" value="1" title="RAM Qty"></div></div>
+            <div class="field"><label>CPU Cooler Condition</label><select data-condition-for="CPU COOLER"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>CPU Cooler</label><select data-quote-select="CPU COOLER"><option value="">Skip CPU Cooler</option></select></div>
+            <div class="field"><label>Casing Condition</label><select data-condition-for="CASING"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>Casing</label><select data-quote-select="CASING"><option value="">Skip Casing</option></select></div>
-            <div class="field"><label>SSD Type / Storage</label><div class="select-qty-row"><select id="quoteSsd" data-quote-select="SSD"><option value="">Skip SSD</option></select><input class="input quote-qty-input" id="quoteSsdQty" type="number" min="1" value="1" title="SSD Qty"></div><p class="field-hint">SATA / M.2 / NVMe compatible SSD quantity.</p></div>
-            <div class="field"><label>Hard Disk</label><div class="select-qty-row"><select id="quoteHardDisk" data-quote-select="HARD DISK"><option value="">Skip Hard Disk</option></select><input class="input quote-qty-input" id="quoteHardDiskQty" type="number" min="1" value="1" title="HDD Qty"></div><p class="field-hint">HDD quantity add කරන්න.</p></div>
+            <div class="field"><label>SSD Condition</label><select data-condition-for="SSD"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
+            <div class="field"><label>SSD / Storage</label><div class="select-qty-row"><select id="quoteSsd" data-quote-select="SSD"><option value="">Skip SSD</option></select><input class="input quote-qty-input" id="quoteSsdQty" type="number" min="1" value="1" title="SSD Qty"></div></div>
+            <div class="field"><label>Hard Disk Condition</label><select data-condition-for="HARD DISK"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
+            <div class="field"><label>Hard Disk</label><div class="select-qty-row"><select id="quoteHardDisk" data-quote-select="HARD DISK"><option value="">Skip Hard Disk</option></select><input class="input quote-qty-input" id="quoteHardDiskQty" type="number" min="1" value="1" title="HDD Qty"></div></div>
+            <div class="field"><label>Power Supply Condition</label><select data-condition-for="POWER SUPPLY"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>Power Supply</label><select data-quote-select="POWER SUPPLY"><option value="">Skip Power Supply</option></select></div>
+            <div class="field"><label>Monitor Condition</label><select data-condition-for="MONITOR"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
+            <div class="field"><label>Monitor Size</label><select id="quoteMonitorSize"><option value="">Any Size</option><option value="19">19 inch</option><option value="20">20 inch</option><option value="22">22 inch</option><option value="24">24 inch</option><option value="27">27 inch</option><option value="29">29 inch</option><option value="32">32 inch</option></select></div>
+            <div class="field wide"><label>Monitor Brand / Model</label><select id="quoteMonitor" data-quote-select="MONITOR"><option value="">Skip Monitor</option></select></div>
             <div class="field wide"><label>Cable Add-ons</label>
               <div class="quote-cable-grid">
                 <label class="quote-cable-item"><input type="checkbox" data-cable-option="POWER CABLE"><span>Power Cable</span><input class="input quote-qty-input" type="number" min="1" value="1" data-cable-qty="POWER CABLE" title="Power Cable Qty"></label>
@@ -48,14 +59,15 @@
                 <label class="quote-cable-item"><input type="checkbox" data-cable-option="HDMI CABLE"><span>HDMI Cable</span><input class="input quote-qty-input" type="number" min="1" value="1" data-cable-qty="HDMI CABLE" title="HDMI Cable Qty"></label>
                 <label class="quote-cable-item"><input type="checkbox" data-cable-option="DVI CABLE"><span>DVI Cable</span><input class="input quote-qty-input" type="number" min="1" value="1" data-cable-qty="DVI CABLE" title="DVI Cable Qty"></label>
               </div>
-              <p class="field-hint">Admin products වල cable item එක add කරලා තිබ්බොත් ඒ price එක auto ගනී. නැත්තම් quote එකේ Rs.0 / Confirm price ලෙස පෙන්වයි.</p>
             </div>
-            <div class="field"><label>Monitor</label><select data-quote-select="MONITOR"><option value="">Skip Monitor</option></select></div>
+            <div class="field"><label>Keyboard Condition</label><select data-condition-for="KEYBOARD"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>Keyboard</label><select data-quote-select="KEYBOARD"><option value="">Skip Keyboard</option></select></div>
+            <div class="field"><label>Mouse Condition</label><select data-condition-for="MOUSE"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>Mouse</label><select data-quote-select="MOUSE"><option value="">Skip Mouse</option></select></div>
+            <div class="field"><label>Speaker Condition</label><select data-condition-for="SPEAKER"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>Speaker</label><select data-quote-select="SPEAKER"><option value="">Skip Speaker</option></select></div>
+            <div class="field"><label>Headset Condition</label><select data-condition-for="HEADSET"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select></div>
             <div class="field"><label>Headset</label><select data-quote-select="HEADSET"><option value="">Skip Headset</option></select></div>
-            <div class="field wide"><div id="compatNote" class="compat-box warn-box">Processor එක select කළාම compatible motherboard සහ RAM පෙන්වයි.</div></div><div class="field wide"><div id="storageCompatNote" class="compat-box">Motherboard එක select කළාම RAM Slot 2/4 සහ SATA / M.2 / NVMe SSD compatibility auto filter වෙයි.</div></div>
           </div>
         </div>
         <aside class="card">
@@ -70,5 +82,5 @@
   <footer class="footer"><div class="container">© Sandaruwan Computer • Online Quotation</div></footer>
   <div class="toast" id="toast"></div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="assets/js/config.js?v=24"></script><script src="assets/js/app.js?v=24"></script>
+  <script src="assets/js/config.js?v=26"></script><script src="assets/js/app.js?v=26"></script>
 </body></html>
