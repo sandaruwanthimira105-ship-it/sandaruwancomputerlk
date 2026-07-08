@@ -1,14 +1,14 @@
 [
   {
-    "id": "MOTH--570",
-    "name": "H81 MOTHERBORD",
+    "id": "PROC--592",
+    "name": "H81",
     "category": "MOTHERBOARD",
     "condition": "USED",
-    "price": 5200,
+    "price": 5000,
     "stock": "",
-    "image": "assets/img/products/h81-motherbord.jpg",
+    "image": "assets/img/products/h81.jpg",
     "description": "",
-    "warrantyMonths": "",
+    "warrantyMonths": "3",
     "generation": "4",
     "compatibleGenerations": [
       "4"
