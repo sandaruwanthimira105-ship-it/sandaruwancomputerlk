@@ -188,3 +188,59 @@ html,body{max-width:100%;overflow-x:hidden}
   .quote-cable-item{grid-template-columns:auto minmax(0,1fr);}
   .quote-cable-item .quote-qty-input{grid-column:1/-1;width:100%;}
 }
+
+/* V13 product page mobile compact layout */
+@media (max-width:680px){
+  body[data-page="products"] .page-hero{padding:28px 0 18px}
+  body[data-page="products"] .page-title h1{font-size:38px;margin:8px 0 10px;line-height:1}
+  body[data-page="products"] .page-title p{font-size:14px;line-height:1.45}
+  body[data-page="products"] .page-title .btn{padding:11px 14px;font-size:13px;border-radius:14px}
+  body[data-page="products"] .section{padding:22px 0 34px}
+  body[data-page="products"] .toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px;border-radius:18px;margin-bottom:16px}
+  body[data-page="products"] .toolbar #productSearch{grid-column:1/-1}
+  body[data-page="products"] .toolbar .input,
+  body[data-page="products"] .toolbar select{font-size:13px;padding:10px 10px;border-radius:12px;min-height:40px}
+  body[data-page="products"] .product-head-row{margin-bottom:12px;align-items:flex-start}
+  body[data-page="products"] .product-head-row h2{font-size:22px;line-height:1.1}
+  body[data-page="products"] .result-count{font-size:12px;white-space:nowrap;margin-top:4px}
+  body[data-page="products"] .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  body[data-page="products"] .product-card{border-radius:16px;box-shadow:0 12px 28px rgba(0,0,0,.18)}
+  body[data-page="products"] .product-card:hover{transform:none}
+  body[data-page="products"] .product-img-wrap{height:118px}
+  body[data-page="products"] .tag-row{left:6px;right:6px;bottom:6px;gap:4px}
+  body[data-page="products"] .tag{font-size:9px;padding:3px 5px;line-height:1.1}
+  body[data-page="products"] .tag-row .tag:nth-child(n+4){display:none}
+  body[data-page="products"] .product-body{padding:10px}
+  body[data-page="products"] .product-body h3{font-size:13px;line-height:1.22;margin:0 0 7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:32px}
+  body[data-page="products"] .meta{gap:4px;max-height:24px;overflow:hidden}
+  body[data-page="products"] .meta span{font-size:9.5px;padding:3px 5px;line-height:1.1}
+  body[data-page="products"] .meta span:nth-child(n+3){display:none}
+  body[data-page="products"] .price{font-size:16px;margin:8px 0 3px;line-height:1.1}
+  body[data-page="products"] .stock{font-size:10.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:28px}
+  body[data-page="products"] .product-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:9px}
+  body[data-page="products"] .product-actions .btn{padding:8px 5px;font-size:10.5px;border-radius:11px;min-height:34px;white-space:nowrap;justify-content:center}
+  body[data-page="products"] .empty-state{grid-column:1/-1;padding:22px;font-size:14px}
+
+  body[data-page="products"] .product-modal{padding:8px}
+  body[data-page="products"] .product-modal-card{border-radius:18px;max-height:94vh}
+  body[data-page="products"] .product-modal-close{width:38px;height:38px;font-size:24px;margin:10px 10px 0 0}
+  body[data-page="products"] .product-modal-image{min-height:190px;padding:12px}
+  body[data-page="products"] .product-modal-image img{max-height:210px;border-radius:16px}
+  body[data-page="products"] .product-modal-info{padding:18px}
+  body[data-page="products"] .product-modal-info h2{font-size:28px;line-height:1.05;letter-spacing:-.8px}
+  body[data-page="products"] .product-modal-price{font-size:24px}
+  body[data-page="products"] .product-modal-description{font-size:14px;line-height:1.55}
+  body[data-page="products"] .product-detail-list div{padding:10px;border-radius:14px}
+  body[data-page="products"] .product-detail-list b{font-size:13px}
+}
+
+@media (max-width:380px){
+  body[data-page="products"] .container{width:calc(100% - 16px)}
+  body[data-page="products"] .product-grid{gap:8px}
+  body[data-page="products"] .product-img-wrap{height:106px}
+  body[data-page="products"] .product-body{padding:8px}
+  body[data-page="products"] .product-body h3{font-size:12px;min-height:30px}
+  body[data-page="products"] .price{font-size:15px}
+  body[data-page="products"] .stock{font-size:10px}
+  body[data-page="products"] .product-actions .btn{font-size:9.5px;padding:7px 4px}
+}
