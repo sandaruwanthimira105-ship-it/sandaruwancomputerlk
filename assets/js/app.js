@@ -203,7 +203,7 @@
     return fetch(url, {...options, signal: controller.signal}).finally(()=>clearTimeout(t));
   }
 
-  function gvizUrlFromSheetUrl(url){
+  function gvizBaseUrlFromSheetUrl(url){
     const u = clean(url);
     if(!u) return '';
     const gidMatch = u.match(/[?#&]gid=(\d+)/);
@@ -212,15 +212,20 @@
     // Published-to-web URL: /spreadsheets/d/e/<PUBLISHED_ID>/pub?...
     const pubMatch = u.match(/\/spreadsheets\/d\/e\/([^/]+)/);
     if(pubMatch){
-      return `https://docs.google.com/spreadsheets/d/e/${pubMatch[1]}/gviz/tq?gid=${gid}&headers=1&tqx=out:json`;
+      return `https://docs.google.com/spreadsheets/d/e/${pubMatch[1]}/gviz/tq?gid=${gid}&headers=1`;
     }
 
     // Normal shared sheet URL: /spreadsheets/d/<SHEET_ID>/edit?...
     const idMatch = u.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
     if(idMatch){
-      return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?gid=${gid}&headers=1&tqx=out:json`;
+      return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?gid=${gid}&headers=1`;
     }
     return '';
+  }
+
+  function gvizUrlFromSheetUrl(url){
+    const base = gvizBaseUrlFromSheetUrl(url);
+    return base ? `${base}&tqx=out:json` : '';
   }
 
   function rowsFromGvizData(data){
@@ -242,6 +247,35 @@
     }).filter(obj => Object.values(obj).some(v => clean(v) !== ''));
   }
 
+  function fetchGvizJsonpRows(url, label){
+    return new Promise(resolve => {
+      const base = gvizBaseUrlFromSheetUrl(url);
+      if(!base){ resolve([]); return; }
+      const cb = `scSheetCallback_${Date.now()}_${Math.floor(Math.random()*100000)}`;
+      const script = document.createElement('script');
+      let done = false;
+      const cleanup = () => {
+        if(script.parentNode) script.parentNode.removeChild(script);
+        try{ delete window[cb]; }catch(e){ window[cb] = undefined; }
+      };
+      const finish = rows => {
+        if(done) return;
+        done = true;
+        cleanup();
+        resolve(Array.isArray(rows) ? rows : []);
+      };
+      window[cb] = data => {
+        try{ finish(rowsFromGvizData(data)); }
+        catch(e){ console.warn(label+' GViz JSONP parse failed:', e); finish([]); }
+      };
+      script.onerror = () => { console.warn(label+' GViz JSONP load failed'); finish([]); };
+      const sep = base.includes('?') ? '&' : '?';
+      script.src = `${base}${sep}tqx=${encodeURIComponent('out:json;responseHandler:'+cb)}&v=${Date.now()}`;
+      document.head.appendChild(script);
+      setTimeout(()=>finish([]), 9000);
+    });
+  }
+
   async function fetchGvizRows(url, label){
     const gviz = gvizUrlFromSheetUrl(url);
     if(!gviz) return [];
@@ -259,6 +293,13 @@
   }
 
   async function fetchCsvRows(url, label){
+    // Google Sheets CSV redirects can be blocked by browser/CORS on some devices.
+    // GViz JSONP works without CORS, so try it first for Google Sheet links.
+    if(/docs\.google\.com\/spreadsheets/.test(clean(url))){
+      const jsonpRows = await fetchGvizJsonpRows(url, label);
+      if(jsonpRows.length) return jsonpRows;
+    }
+
     try{
       const finalUrl = googleCsvUrl(url);
       const sep = finalUrl.includes('?') ? '&' : '?';
@@ -268,7 +309,6 @@
       if(rows.length) return rows;
     }catch(e){ console.warn(label+' CSV load failed:', e); }
 
-    // Google Sheets sometimes blocks CSV fetch, but GViz JSON can still work on published sheets.
     if(/docs\.google\.com\/spreadsheets/.test(clean(url))){
       const rows = await fetchGvizRows(url, label);
       if(rows.length) return rows;
