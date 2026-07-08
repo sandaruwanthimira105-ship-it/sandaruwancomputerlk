@@ -1,2 +1,1 @@
-id;name;category;condition;price;generation;memory;chipset;socket;stock;image;description;warrantyMonths;storageType;m2SataSupport;nvmeSupport;m2Slots;compatibleGenerations;compatibleRam;ramSlots;storageSupport;compatibleMotherboardIds
-PROC--592;H81;MOTHERBOARD;USED;8000;4;DDR3;;;;assets/img/products/h81.jpg;;3;;NO;NO;;4;DDR3;2;SATA SSD;
+id,name,category,condition,price,stock,image,description,warrantyMonths,generation,compatibleGenerations,ramSupport,ramSlots,storageSupport,compatibleMotherboardIds,compatibleProcessorIds,chipset,socket,storageType,active,sortOrder
