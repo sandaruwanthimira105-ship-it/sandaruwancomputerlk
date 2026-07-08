@@ -109,7 +109,9 @@
     return '';
   }
   function storageType(p){
-    return storageTypeFromText(p.storageType || p.storage_type || p.storage || p.interface || p.ssdType || p.ssd_type || p.storageSupport || p.storage_support) || (p.category==='SSD'?'SATA SSD':'');
+    const cat = categoryName(p.category);
+    if(cat !== 'SSD') return '';
+    return storageTypeFromText(p.storageType || p.storage_type || p.storage || p.interface || p.ssdType || p.ssd_type) || 'SATA SSD';
   }
   function productImage(p){ return clean(p.image) || 'assets/img/logo.jpg'; }
 
@@ -482,6 +484,7 @@
 
   document.addEventListener('DOMContentLoaded', async ()=>{
     bindCommon();
+    bindPopupSafety();
     const page=document.body.dataset.page;
     try{
       if(page==='home') initHome();
