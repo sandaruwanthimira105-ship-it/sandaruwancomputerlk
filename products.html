@@ -2,6 +2,92 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Products | Sandaruwan Computer</title><link rel="icon" href="assets/img/logo.jpg"><link rel="stylesheet" href="assets/css/style.css">
 <style>
 .products-shell{display:grid;grid-template-columns:250px 1fr;gap:22px;align-items:start}.category-sidebar{position:sticky;top:92px;background:rgba(5,10,28,.72);border:1px solid rgba(255,255,255,.09);border-radius:22px;padding:14px;box-shadow:0 18px 50px rgba(0,0,0,.22)}.category-sidebar h3{margin:6px 8px 12px;font-size:16px}.category-link{width:100%;display:flex;justify-content:space-between;align-items:center;gap:8px;border:0;background:transparent;color:#dbeafe;text-align:left;padding:10px 12px;border-radius:14px;font-weight:700;cursor:pointer}.category-link span{font-size:12px;color:#9fb5d1}.category-link:hover,.category-link.active{background:linear-gradient(135deg,rgba(11,188,255,.18),rgba(38,104,255,.12));color:#fff}.product-main{min-width:0}.product-filter-bar{display:grid;grid-template-columns:1.6fr repeat(4,minmax(130px,1fr));gap:10px;margin-bottom:14px}.product-filter-bar .input,.product-filter-bar select{width:100%}.filter-pill-row{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}.filter-pill-row [data-filter-box]{min-width:140px}.filter-pill-row select{width:100%;min-height:42px}.product-result-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px}.product-result-head h2{margin:0}.product-result-head .muted{font-weight:700}@media(max-width:900px){.products-shell{grid-template-columns:1fr}.category-sidebar{position:relative;top:auto}.category-list{display:flex;overflow:auto;gap:8px;padding-bottom:4px}.category-link{min-width:160px}.product-filter-bar{grid-template-columns:1fr 1fr}.filter-pill-row [data-filter-box]{min-width:calc(50% - 5px);flex:1}}@media(max-width:520px){.product-filter-bar{grid-template-columns:1fr}.filter-pill-row [data-filter-box]{min-width:100%}}
+
+/* V32 product page image balance fix - only products page */
+.product-main .product-grid,
+.product-main .products-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:16px!important;
+  align-items:stretch!important;
+}
+.product-main .product-card{
+  border-radius:20px!important;
+  overflow:hidden!important;
+}
+.product-main .product-img-wrap{
+  height:145px!important;
+  min-height:145px!important;
+  max-height:145px!important;
+  background:#071226!important;
+}
+.product-main .product-img-wrap img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  padding:10px!important;
+  box-sizing:border-box!important;
+  background:radial-gradient(circle at center, rgba(11,188,255,.10), rgba(7,18,38,.96))!important;
+}
+.product-main .product-img-wrap:after{
+  background:linear-gradient(180deg, transparent 55%, rgba(0,0,0,.40))!important;
+}
+.product-main .product-body{padding:14px!important}
+.product-main .product-body h3{
+  font-size:15px!important;
+  line-height:1.25!important;
+  min-height:38px!important;
+  margin-bottom:8px!important;
+}
+.product-main .price{font-size:19px!important;margin:10px 0 4px!important}
+.product-main .stock{font-size:12px!important}
+.product-main .product-actions{gap:7px!important;margin-top:12px!important}
+.product-main .product-actions .btn{padding:9px 11px!important;font-size:12px!important}
+.product-main .tag-row{left:8px!important;right:8px!important;bottom:8px!important;gap:5px!important}
+.product-main .tag{font-size:10px!important;padding:4px 7px!important}
+.product-modal.open{display:flex!important}
+.product-modal-image{
+  height:auto!important;
+  max-height:360px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.product-modal-image img{
+  width:100%!important;
+  max-width:420px!important;
+  height:auto!important;
+  max-height:340px!important;
+  object-fit:contain!important;
+}
+@media(max-width:1050px){
+  .product-main .product-grid,
+  .product-main .products-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .product-main .product-img-wrap{height:135px!important;min-height:135px!important;max-height:135px!important}
+}
+@media(max-width:720px){
+  .product-main .product-grid,
+  .product-main .products-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+  .product-main .product-img-wrap{height:108px!important;min-height:108px!important;max-height:108px!important}
+  .product-main .product-img-wrap img{padding:7px!important}
+  .product-main .product-body{padding:10px!important}
+  .product-main .product-body h3{font-size:13px!important;min-height:34px!important}
+  .product-main .meta{display:none!important}
+  .product-main .price{font-size:16px!important}
+  .product-main .stock{font-size:11px!important}
+  .product-main .product-actions{display:grid!important;grid-template-columns:1fr!important}
+  .product-main .product-actions .btn{width:100%!important;justify-content:center!important;padding:8px 9px!important;font-size:11px!important}
+  .product-modal-card{width:calc(100% - 20px)!important;max-height:92vh!important}
+  .product-modal-grid{grid-template-columns:1fr!important}
+  .product-modal-image{max-height:220px!important}
+  .product-modal-image img{max-height:200px!important;max-width:100%!important}
+}
+@media(max-width:360px){
+  .product-main .product-grid,
+  .product-main .products-grid{grid-template-columns:1fr 1fr!important;gap:8px!important}
+  .product-main .product-img-wrap{height:96px!important;min-height:96px!important;max-height:96px!important}
+}
 </style></head>
 <body data-page="products">
   <header class="navbar"><div class="container nav-wrap"><a class="brand" href="index.html"><img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo"><div class="brand-title">Sandaruwan Computer<span>Products Store</span></div></a><button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button><nav class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="quotation.html">Online Quotation</a><a href="products.html" class="active">Products</a><a href="prebuild.html">Pre Build PCs</a><a href="about.html">About Us</a><a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a><a href="checkout.html">Checkout</a></nav></div></header>
@@ -25,7 +111,7 @@
           <div data-filter-box="socketGen"><select class="product-filter" id="socketGenFilter"><option value="">Socket / Gen</option></select></div>
         </div>
         <div class="product-result-head"><h2>Available Products</h2><span class="muted" id="productCount">Loading...</span></div>
-        <div class="products-grid" id="productsGrid"><div class="loading-state">Loading products...</div></div>
+        <div class="product-grid products-grid" id="productsGrid"><div class="loading-state">Loading products...</div></div>
       </div>
     </div></section>
   </main>
