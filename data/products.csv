@@ -1,1 +1,48 @@
-id,name,category,condition,price,stock,image,description,warrantyMonths,generation,compatibleGenerations,ramSupport,ramSlots,storageSupport,compatibleMotherboardIds,compatibleProcessorIds,chipset,socket,storageType,active,sortOrder
+﻿PRODUCT ID,PRODUCT NAME,CATEGORY,CONDITION,PRICE,IMAGE PATH,BRAND,MODEL / SERIES,MB GEN OPTION 1,MB GEN OPTION 2,PROCESSOR GEN,RAM SUPPORT,RAM SLOT OPTION 1,RAM SLOT OPTION 2,SSD SUPPORT,SSD TYPE,MONITOR SIZE,PANEL TYPE,CAPACITY / MEMORY,SPEED,WATT,RGB,SOCKET / GEN,WARRANTY MONTHS,STOCK,DESCRIPTION
+CAS-V8,V8 Casing,CASING,USED,7500,assets/img/products/v8-casing.jpg,V8,Normal ATX,,,,,,,,,,,,,,NON RGB,,1,4,Used desktop casing for budget PC builds.
+CAS-FALCON,Falcon Normal Casing,CASING,USED,4500,assets/img/products/falcon-normal-casing.jpg,Falcon,Normal ATX,,,,,,,,,,,,,,NON RGB,,1,5,Normal casing suitable for office and budget desktop builds.
+CAS-XUAN,Xuan Casing,CASING,USED,6500,assets/img/products/xuan-casing.jpg,Xuan,ATX,,,,,,,,,,,,,,NON RGB,,1,3,"Used Xuan casing, suitable for standard PC builds."
+CAS-RUIX-T8,RUIX T8 Casing,CASING,USED,8200,assets/img/products/ruix-t8-casing.jpg,RUIX,T8,,,,,,,,,,,,,,RGB,,1,2,RUIX T8 used casing for gaming style desktop builds.
+MB-H61,H61 Motherboard,MOTHERBOARD,USED,9500,assets/img/products/h61-motherboard.jpg,Generic,H61,2ND GEN,3RD GEN,,DDR3,2 RAM SLOT,,SATA ONLY,,,,,,,,LGA1155,1,4,"H61 board supports 2nd/3rd Gen Intel processors, DDR3 RAM and SATA SSD/HDD only."
+MB-H81,H81 Motherboard,MOTHERBOARD,USED,12500,assets/img/products/h81-motherboard.jpg,Generic,H81,4TH GEN,,,DDR3,2 RAM SLOT,,SATA ONLY,,,,,,,,LGA1150,1,4,"H81 board supports 4th Gen Intel processors, DDR3 RAM and SATA SSD/HDD only."
+MB-B85,B85 Motherboard,MOTHERBOARD,USED,16500,assets/img/products/b85-motherboard-ram-slot-4.jpg,Generic,B85,4TH GEN,,,DDR3,2 RAM SLOT,4 RAM SLOT,SATA ONLY,,,,,,,,LGA1150,1,2,B85 board supports 4th Gen Intel processors with 4 RAM slots and SATA storage.
+MB-B75,B75 Motherboard,MOTHERBOARD,USED,14500,assets/img/products/b75-motherboard-ram-slot-4.jpg,Generic,B75,2ND GEN,3RD GEN,,DDR3,2 RAM SLOT,4 RAM SLOT,SATA ONLY,,,,,,,,LGA1155,1,2,B75 board supports 2nd/3rd Gen Intel processors with 4 RAM slots and SATA storage.
+MB-H110-SATA,H110 Motherboard,MOTHERBOARD,USED,17500,assets/img/products/h110-motherboard-ram-slot-2-no-m-2.jpg,Generic,H110,6TH GEN,7TH GEN,,DDR4,2 RAM SLOT,,SATA ONLY,,,,,,,,LGA1151,1,3,H110 DDR4 board supports 6th/7th Gen Intel processors with SATA only storage.
+MB-H110-M2,H110 M.2 Motherboard,MOTHERBOARD,USED,20500,assets/img/products/h110-m-2-motherboard-ram-slot-2.jpg,Generic,H110 M.2,6TH GEN,7TH GEN,,DDR4,2 RAM SLOT,,SATA AND M.2,,,,,,,,LGA1151,1,2,"H110 M.2 board supports 6th/7th Gen Intel processors, DDR4 RAM, SATA and M.2 SSD."
+MB-B150,B150 Motherboard M.2,MOTHERBOARD,USED,22500,assets/img/products/b150-motherboard-ram-slot-4-m-2.jpg,Generic,B150,6TH GEN,7TH GEN,,DDR4,4 RAM SLOT,,SATA AND M.2,,,,,,,,LGA1151,1,2,"B150 board supports 6th/7th Gen Intel processors, 4 RAM slots, SATA and M.2 SSD."
+MB-B250,B250 Motherboard,MOTHERBOARD,USED,27500,assets/img/products/b250-motherboard-ram-slot-4-nvme-and-m-2.jpg,Generic,B250,6TH GEN,7TH GEN,,DDR4,4 RAM SLOT,,SATA - M.2 - NVME,,,,,,,,LGA1151,1,2,"B250 board supports 6th/7th Gen Intel processors, 4 RAM slots, SATA, M.2 and NVMe SSD."
+CPU-I3-2ND,Intel Core i3 2nd Gen Processor,PROCESSOR,USED,4500,assets/img/products/intel-core-i3-2nd-gen-processor.jpg,Intel,Core i3,,,2ND GEN,,,,,,,,,,,,LGA1155,1,5,Intel Core i3 2nd Gen Processor used processor.
+CPU-I3-3RD,Intel Core i3 3rd Gen Processor,PROCESSOR,USED,5500,assets/img/products/intel-core-i3-3rd-gen-processor.jpg,Intel,Core i3,,,3RD GEN,,,,,,,,,,,,LGA1155,1,4,Intel Core i3 3rd Gen Processor used processor.
+CPU-I3-4TH,Intel Core i3 4th Gen Processor,PROCESSOR,USED,7500,assets/img/products/intel-core-i3-4th-gen-processor.jpg,Intel,Core i3,,,4TH GEN,,,,,,,,,,,,LGA1150,1,4,Intel Core i3 4th Gen Processor used processor.
+CPU-I3-6TH,Intel Core i3 6th Gen Processor,PROCESSOR,USED,9500,assets/img/products/intel-core-i3-6th-gen-processor.jpg,Intel,Core i3,,,6TH GEN,,,,,,,,,,,,LGA1151,1,3,Intel Core i3 6th Gen Processor used processor.
+CPU-I5-2ND,Intel Core i5 2nd Gen Processor,PROCESSOR,USED,6500,assets/img/products/intel-core-i5-2nd-gen-processor.jpg,Intel,Core i5,,,2ND GEN,,,,,,,,,,,,LGA1155,1,4,Intel Core i5 2nd Gen Processor used processor.
+CPU-I5-3RD,Intel Core i5 3rd Gen Processor,PROCESSOR,USED,7500,assets/img/products/intel-core-i5-3rd-gen-processor.jpg,Intel,Core i5,,,3RD GEN,,,,,,,,,,,,LGA1155,1,4,Intel Core i5 3rd Gen Processor used processor.
+CPU-I5-4TH,Intel Core i5 4th Gen Processor,PROCESSOR,USED,12500,assets/img/products/intel-core-i5-4th-gen-processor.jpg,Intel,Core i5,,,4TH GEN,,,,,,,,,,,,LGA1150,1,4,Intel Core i5 4th Gen Processor used processor.
+CPU-I5-6TH,Intel Core i5 6th Gen Processor,PROCESSOR,USED,16500,assets/img/products/intel-core-i5-6th-gen-processor.jpg,Intel,Core i5,,,6TH GEN,,,,,,,,,,,,LGA1151,1,3,Intel Core i5 6th Gen Processor used processor.
+SSD-SATA-120GB,120GB SATA SSD,SSD,USED,3500,assets/img/products/120gb-sata-ssd.jpg,Generic,SATA SSD,,,,,,,,SATA SSD,,,120GB,,,,,1,5,120GB SATA SSD used drive.
+SSD-SATA-256GB,256GB SATA SSD,SSD,USED,5500,assets/img/products/256gb-sata-ssd.jpg,Generic,SATA SSD,,,,,,,,SATA SSD,,,256GB,,,,,1,5,256GB SATA SSD used drive.
+SSD-M2-120GB,120GB M.2 SSD,SSD,USED,4500,assets/img/products/120gb-m-2-ssd.jpg,Generic,M.2 SSD,,,,,,,,M.2 SSD,,,120GB,,,,,1,3,120GB M.2 SSD used drive.
+SSD-NVME-120GB,120GB NVME SSD,SSD,USED,5500,assets/img/products/120gb-nvme-ssd.jpg,Generic,NVME SSD,,,,,,,,NVME SSD,,,120GB,,,,,1,3,120GB NVME SSD used drive.
+SSD-NVME-256GB,256GB NVME SSD,SSD,USED,8500,assets/img/products/256gb-nvme-ssd.jpg,Generic,NVME SSD,,,,,,,,NVME SSD,,,256GB,,,,,1,3,256GB NVME SSD used drive.
+RAM-DDR3-2GB,DDR3 2GB RAM,RAM,USED,1200,assets/img/products/ddr3-2gb-ram.jpg,Generic,DDR3,,,,DDR3,,,,,,,2GB,1333MHz,,,,1,8,DDR3 2GB RAM used module.
+RAM-DDR3-4GB,DDR3 4GB RAM,RAM,USED,2500,assets/img/products/ddr3-4gb-ram.jpg,Generic,DDR3,,,,DDR3,,,,,,,4GB,1600MHz,,,,1,6,DDR3 4GB RAM used module.
+RAM-DDR3-8GB,DDR3 8GB RAM,RAM,USED,4800,assets/img/products/ddr3-8gb-ram.jpg,Generic,DDR3,,,,DDR3,,,,,,,8GB,1600MHz,,,,1,5,DDR3 8GB RAM used module.
+RAM-DDR4-8GB,DDR4 8GB RAM,RAM,USED,6500,assets/img/products/ddr4-8gb-ram.jpg,Generic,DDR4,,,,DDR4,,,,,,,8GB,2400MHz,,,,1,5,DDR4 8GB RAM used module.
+HDD-500GB,500GB HDD,HDD,USED,2800,assets/img/products/500gb-hdd.jpg,Generic,SATA HDD,,,,,,,,,,,500GB,,,,,1,5,500GB HDD used SATA hard disk.
+HDD-1TB,1TB HDD,HDD,USED,4800,assets/img/products/1tb-hdd.jpg,Generic,SATA HDD,,,,,,,,,,,1TB,,,,,1,5,1TB HDD used SATA hard disk.
+HDD-2TB,2TB HDD,HDD,USED,8500,assets/img/products/2tb-hdd.jpg,Generic,SATA HDD,,,,,,,,,,,2TB,,,,,1,3,2TB HDD used SATA hard disk.
+HDD-3TB,3TB HDD,HDD,USED,12000,assets/img/products/3tb-hdd.jpg,Generic,SATA HDD,,,,,,,,,,,3TB,,,,,1,2,3TB HDD used SATA hard disk.
+HDD-4TB,4TB HDD,HDD,USED,15500,assets/img/products/4tb-hdd.jpg,Generic,SATA HDD,,,,,,,,,,,4TB,,,,,1,2,4TB HDD used SATA hard disk.
+PSU-400W,400W PSU,POWER SUPPLY,USED,3500,assets/img/products/400w-psu.jpg,Generic,ATX PSU,,,,,,,,,,,,,400,,,1,4,Used 400W PSU power supply.
+PSU-500W,500W PSU,POWER SUPPLY,USED,5500,assets/img/products/500w-psu.jpg,Generic,ATX PSU,,,,,,,,,,,,,500,,,1,3,Used 500W PSU power supply.
+PSU-600W,600W PSU,POWER SUPPLY,USED,7500,assets/img/products/600w-psu.jpg,Generic,ATX PSU,,,,,,,,,,,,,600,,,1,2,Used 600W PSU power supply.
+VGA-GTX660-2GB,GTX 660 2GB VGA Card,VGA CARD,USED,8500,assets/img/products/gtx-660-2gb-vga-card.jpg,NVIDIA,GTX 660,,,,,,,,,,,2GB,,,,PCIe,1,2,GTX 660 2GB VGA Card used graphics card.
+VGA-GTX760-2GB,GTX 760 2GB VGA Card,VGA CARD,USED,12500,assets/img/products/gtx-760-2gb-vga-card.jpg,NVIDIA,GTX 760,,,,,,,,,,,2GB,,,,PCIe,1,2,GTX 760 2GB VGA Card used graphics card.
+VGA-GTX960-2GB,GTX 960 2GB VGA Card,VGA CARD,USED,18500,assets/img/products/gtx-960-2gb-vga-card.jpg,NVIDIA,GTX 960,,,,,,,,,,,2GB,,,,PCIe,1,2,GTX 960 2GB VGA Card used graphics card.
+VGA-GTX1060-3GB,GTX 1060 3GB VGA Card,VGA CARD,USED,28000,assets/img/products/gtx-1060-3gb-vga-card.jpg,NVIDIA,GTX 1060,,,,,,,,,,,3GB,,,,PCIe,1,1,GTX 1060 3GB VGA Card used graphics card.
+VGA-GTX1060-6GB,GTX 1060 6GB VGA Card,VGA CARD,USED,38000,assets/img/products/gtx-1060-6gb-vga-card.jpg,NVIDIA,GTX 1060,,,,,,,,,,,6GB,,,,PCIe,1,1,GTX 1060 6GB VGA Card used graphics card.
+MON-19-LED-TN,19 Inch LED Monitor,MONITOR,USED,8500,assets/img/products/19-inch-led-monitor.jpg,Generic,LED,,,,,,,,,19 WIDE,TN,,,,,,1,4,19 Inch LED Monitor used monitor with TN panel.
+MON-22-LED-VA,22 Inch LED Monitor,MONITOR,USED,14500,assets/img/products/22-inch-led-monitor.jpg,Generic,LED,,,,,,,,,22 WIDE,VA,,,,,,1,3,22 Inch LED Monitor used monitor with VA panel.
+MON-22-LED-IPS,22 Inch LED IPS Monitor,MONITOR,USED,18500,assets/img/products/22-inch-led-ips-monitor.jpg,Generic,LED IPS,,,,,,,,,22 WIDE,IPS,,,,,,1,2,22 Inch LED IPS Monitor used monitor with IPS panel.
+MON-24-LED-VA,24 Inch LED Monitor,MONITOR,USED,22500,assets/img/products/24-inch-led-monitor.jpg,Generic,LED,,,,,,,,,24 WIDE,VA,,,,,,1,2,24 Inch LED Monitor used monitor with VA panel.
+MON-24-LED-IPS,24 Inch LED IPS Monitor,MONITOR,USED,28500,assets/img/products/24-inch-led-ips-monitor.jpg,Generic,LED IPS,,,,,,,,,24 WIDE,IPS,,,,,,1,2,24 Inch LED IPS Monitor used monitor with IPS panel.
