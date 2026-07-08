@@ -197,15 +197,82 @@
     return p.condition === 'NEW' ? 'Brand warranty / shop warranty as available' : 'Shop checking warranty as available';
   }
 
+  function fetchWithTimeout(url, options={}, timeoutMs=9000){
+    const controller = new AbortController();
+    const t = setTimeout(()=>controller.abort(), timeoutMs);
+    return fetch(url, {...options, signal: controller.signal}).finally(()=>clearTimeout(t));
+  }
+
+  function gvizUrlFromSheetUrl(url){
+    const u = clean(url);
+    if(!u) return '';
+    const gidMatch = u.match(/[?#&]gid=(\d+)/);
+    const gid = gidMatch ? gidMatch[1] : '0';
+
+    // Published-to-web URL: /spreadsheets/d/e/<PUBLISHED_ID>/pub?...
+    const pubMatch = u.match(/\/spreadsheets\/d\/e\/([^/]+)/);
+    if(pubMatch){
+      return `https://docs.google.com/spreadsheets/d/e/${pubMatch[1]}/gviz/tq?gid=${gid}&headers=1&tqx=out:json`;
+    }
+
+    // Normal shared sheet URL: /spreadsheets/d/<SHEET_ID>/edit?...
+    const idMatch = u.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if(idMatch){
+      return `https://docs.google.com/spreadsheets/d/${idMatch[1]}/gviz/tq?gid=${gid}&headers=1&tqx=out:json`;
+    }
+    return '';
+  }
+
+  function rowsFromGvizData(data){
+    const table = data && data.table;
+    if(!table || !Array.isArray(table.cols) || !Array.isArray(table.rows)) return [];
+    let headers = table.cols.map(c => clean(c.label || c.id));
+    let rows = table.rows.map(r => (r.c || []).map(c => c ? clean(c.f ?? c.v ?? '') : ''));
+
+    // If Google did not detect headers, use first row as headers.
+    const headerLooksBad = !headers.some(Boolean) || headers.every(h => /^([A-Z]|[a-z]|col\d+)$/i.test(h));
+    if(headerLooksBad && rows.length){
+      headers = rows.shift().map(h => clean(h));
+    }
+    if(!headers.some(Boolean)) return [];
+    return rows.map(cols => {
+      const obj = {};
+      headers.forEach((h,i)=>{ if(h) obj[h] = clean(cols[i] ?? ''); });
+      return obj;
+    }).filter(obj => Object.values(obj).some(v => clean(v) !== ''));
+  }
+
+  async function fetchGvizRows(url, label){
+    const gviz = gvizUrlFromSheetUrl(url);
+    if(!gviz) return [];
+    try{
+      const sep = gviz.includes('?') ? '&' : '?';
+      const res = await fetchWithTimeout(`${gviz}${sep}v=${Date.now()}`, {cache:'no-store'}, 9000);
+      if(!res.ok) throw new Error(`${label} GViz HTTP ${res.status}`);
+      const text = await res.text();
+      const m = text.match(/setResponse\(([^]*?)\);?\s*$/);
+      const data = JSON.parse(m ? m[1] : text);
+      const rows = rowsFromGvizData(data);
+      if(rows.length) return rows;
+    }catch(e){ console.warn(label+' GViz load failed:', e); }
+    return [];
+  }
+
   async function fetchCsvRows(url, label){
     try{
       const finalUrl = googleCsvUrl(url);
       const sep = finalUrl.includes('?') ? '&' : '?';
-      const res = await fetch(`${finalUrl}${sep}v=${Date.now()}`, {cache:'no-store'});
+      const res = await fetchWithTimeout(`${finalUrl}${sep}v=${Date.now()}`, {cache:'no-store'}, 9000);
       if(!res.ok) throw new Error(`${label} HTTP ${res.status}`);
       const rows = parseCSV(await res.text());
       if(rows.length) return rows;
-    }catch(e){ console.warn(label+' load failed:', e); }
+    }catch(e){ console.warn(label+' CSV load failed:', e); }
+
+    // Google Sheets sometimes blocks CSV fetch, but GViz JSON can still work on published sheets.
+    if(/docs\.google\.com\/spreadsheets/.test(clean(url))){
+      const rows = await fetchGvizRows(url, label);
+      if(rows.length) return rows;
+    }
     return [];
   }
 
@@ -213,7 +280,10 @@
     productsCache = null;
     let rows = [];
     if(clean(CONFIG.sheetCsvUrl)) rows = await fetchCsvRows(CONFIG.sheetCsvUrl, 'Google Sheet products');
+
+    // Always try local fallback when the website is opened through http / GitHub Pages.
     if(!rows.length && location.protocol !== 'file:') rows = await fetchCsvRows('data/products.csv', 'Local products.csv');
+
     const normalized = rows.map(normalizeProduct).filter(p => p.active && p.name && p.category);
     normalized.sort((a,b)=>(a.sortOrder||99999)-(b.sortOrder||99999) || a.name.localeCompare(b.name));
     productsCache = normalized;
@@ -318,7 +388,7 @@
         const pGens=p.generations||[];
         return (!q||hay.includes(q)) && (!cat||p.category===cat) && (!cond||p.condition===cond) && (!mem||(p.ramSupport||[]).includes(mem)||p.memory===mem) && (!gen||pGens.includes(gen)) && (!store||p.storageType===store||(p.storageSupport||[]).includes(store));
       });
-      grid.innerHTML=filtered.length?filtered.map(productCard).join(''):`<div class="empty-state"><h2>No products found</h2><p>Google Sheet එකේ products add කරලා config.js එකේ sheetCsvUrl link එක paste කරන්න.</p></div>`;
+      grid.innerHTML=filtered.length?filtered.map(productCard).join(''):`<div class="empty-state"><h2>No products found</h2><p>Products load වෙලා නැහැ. Google Sheet එක Publish to web → CSV කරලා තියෙනවද සහ config.js sheetCsvUrl link එක හරියට තියෙනවද බලන්න.</p></div>`;
       $('#resultCount')&&( $('#resultCount').textContent=`${filtered.length} products` );
     }
     render();
