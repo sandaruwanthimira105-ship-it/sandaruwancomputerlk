@@ -10,6 +10,9 @@
     .admin-note{border:1px solid rgba(22,199,255,.22);background:rgba(22,199,255,.08);border-radius:20px;padding:16px;color:#d9f6ff;line-height:1.6}
     .admin-layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:22px;align-items:start}
     .admin-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.field.wide{grid-column:1/-1}.field label{display:block;margin:0 0 8px;color:#e9f7ff;font-weight:800}.field-hint{margin:7px 0 0;color:var(--muted);font-size:12px;line-height:1.45}.compat-box{border:1px solid var(--line2);background:#091326;border-radius:22px;padding:18px;margin-top:18px}.compat-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:12px}.compat-head h3{margin:0}.compat-head p{margin:4px 0 0;color:var(--muted);font-size:13px}.tick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.tick-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.tick-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.tick-box{display:flex;gap:10px;align-items:center;border:1px solid var(--line2);background:#0c1428;border-radius:15px;padding:12px 13px;color:#dfefff;font-weight:800;cursor:pointer}.tick-box input{width:18px;height:18px;accent-color:#16c7ff}.tick-box small{display:block;color:var(--muted);font-weight:500;margin-top:2px}.motherboard-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:310px;overflow:auto;padding:4px}.mb-option{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line2);background:#0c1428;border-radius:15px;padding:12px}.mb-option input{margin-top:3px;accent-color:#16c7ff}.mb-option b{display:block;color:#fff}.mb-option small{display:block;color:var(--muted);line-height:1.5;margin-top:3px}.admin-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.admin-product-list{display:grid;gap:10px;margin-top:14px;max-height:720px;overflow:auto}.admin-product-item{display:flex;gap:12px;align-items:center;border:1px solid var(--line2);background:#0b1326;border-radius:18px;padding:12px}.admin-product-item img{width:56px;height:56px;object-fit:cover;border-radius:14px;background:#081225}.admin-product-item .grow{flex:1}.admin-product-item b{display:block;color:#fff}.admin-product-item small{display:block;color:var(--muted);line-height:1.5}.admin-product-item .mini-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.hidden-section{display:none}.mini-muted{font-size:12px;color:var(--muted);line-height:1.55}.json-preview{white-space:pre-wrap;font-size:11px;max-height:180px;overflow:auto;border:1px solid var(--line2);border-radius:14px;background:#050a18;padding:12px;color:#bbd6ff}.source-badge{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:999px;background:rgba(22,199,255,.12);border:1px solid rgba(22,199,255,.22);color:#9eeaff;font-size:10px;font-weight:900}.deleted-panel{display:none;margin-top:14px;border:1px solid var(--line2);border-radius:18px;background:#071020;padding:12px}.deleted-panel.show{display:block}.deleted-row{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)}.deleted-row:last-child{border-bottom:0}.deleted-row small{color:var(--muted)}
+    .local-save-panel{margin-top:16px;background:linear-gradient(135deg,rgba(37,99,235,.16),rgba(22,199,255,.08));border-color:rgba(22,199,255,.32)}
+    .local-save-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}.local-status{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:#071020;color:#b9d7ff;font-size:12px;font-weight:800}.local-status.ready{border-color:rgba(62,255,170,.32);color:#b9ffd9;background:rgba(62,255,170,.08)}
+    .auto-path-preview{margin-top:8px;color:#9eeaff;font-size:12px;word-break:break-all}
     @media(max-width:980px){.admin-layout{grid-template-columns:1fr}.tick-grid,.tick-grid.three,.tick-grid.two,.motherboard-picker{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:560px){.admin-form-grid,.tick-grid,.tick-grid.three,.tick-grid.two,.motherboard-picker{grid-template-columns:1fr}}
   </style>
@@ -45,6 +48,16 @@
           <h2 style="margin-top:0">Add / Edit Product</h2>
           <div class="admin-note"><b>Use this workflow:</b> First add Motherboards with GEN / RAM Slot 2-4 / RAM Type / SSD Support ticks. Then add Processor and tick the compatible motherboards from the list.</div>
 
+          <div class="admin-note local-save-panel">
+            <b>Desktop Auto Save Mode</b>
+            <div class="mini-muted">Chrome / Edge browser එකෙන් website folder එක select කරන්න. Product save කරනකොට image එක product name එකෙන් auto rename වෙලා <b>assets/img/products/</b> folder එකට save වෙනවා. Products data එකත් <b>data/products.csv</b> සහ <b>data/products.json</b> දෙකටම auto update වෙනවා. Excel වලින් price edit කරන්න <b>data/products.csv</b> open කරන්න.</div>
+            <div class="local-save-actions">
+              <button class="btn btn-primary btn-small" type="button" id="selectProjectFolderBtn">Select Website Folder</button>
+              <span class="local-status" id="folderStatus">Folder not selected</span>
+            </div>
+            <div class="auto-path-preview" id="autoImagePathPreview">Image path will appear here after selecting image.</div>
+          </div>
+
           <div class="admin-form-grid" style="margin-top:18px">
             <div class="field"><label>Product Name</label><input class="input" id="pmName" required placeholder="H81 Motherboard / Intel Core i5 4th Gen"></div>
             <div class="field"><label>Product ID</label><input class="input" id="pmId" placeholder="Auto generate / custom ID"></div>
@@ -54,7 +67,7 @@
             <div class="field"><label>Stock</label><input class="input" id="pmStock" placeholder="5 / Contact"></div>
             <div class="field"><label>Warranty Months</label><input class="input" id="pmWarrantyMonths" type="number" min="0" placeholder="1 / 3 / 6 / 12"></div>
             <div class="field"><label>Image Path / URL</label><input class="input" id="pmImage" placeholder="assets/img/products/item.jpg"></div>
-            <div class="field wide"><label>Or Choose Image File</label><input class="input" id="pmImageFile" type="file" accept="image/*"><p class="field-hint">GitHub වලට image upload කරනවා නම් Image Path එක use කරන්න. File choose කළොත් base64 JSON එකට save වෙනවා.</p></div>
+            <div class="field wide"><label>Or Choose Image File</label><input class="input" id="pmImageFile" type="file" accept="image/*"><p class="field-hint">Desktop Auto Save Mode ON නම් image එක auto rename වෙලා <b>assets/img/products/</b> folder එකට save වෙනවා. Folder select කරලා නැත්තම් old method එකට image path/manual use කරන්න.</p></div>
             <div class="field wide"><label>Description</label><textarea id="pmDescription" rows="4" placeholder="Product details, condition, included items..."></textarea></div>
           </div>
 
@@ -117,6 +130,7 @@
           <div class="admin-actions">
             <button class="btn btn-primary" type="submit">Save Product</button>
             <button class="btn btn-ghost" type="button" id="newProductBtn">New Product</button>
+            <button class="btn btn-ghost" type="button" id="downloadCsvBtn">Download products.csv</button>
             <button class="btn btn-ghost" type="button" id="downloadJsonBtn">Download products.json</button>
           </div>
         </form>
@@ -125,10 +139,10 @@
           <h2 style="margin-top:0">Manage Products</h2>
           <p class="muted">දැන් default sample products අයින් කරලා තියෙනවා. මෙතනින් ඔයා add කරන products පමණක් <b>Edit</b> / <b>Delete</b> කරන්න පුළුවන්.</p>
           <div class="toolbar" style="grid-template-columns:1fr auto auto;margin-top:12px"><input class="input" id="adminSearch" type="search" placeholder="Search products..."><button class="btn btn-ghost btn-small" id="showDeletedBtn" type="button">Deleted (0)</button><button class="btn btn-danger btn-small" id="clearLocalProductsBtn" type="button">Reset Local</button></div>
-          <div class="admin-note" style="margin-top:12px;padding:12px"><b>Tip:</b> Product add/edit/delete කළාට පස්සේ <b>Download products.json</b> කරලා GitHub repo එකේ <b>data/products.json</b> replace කරන්න. එතකොට website එකේ products permanent වෙනවා.</div>
+          <div class="admin-note" style="margin-top:12px;padding:12px"><b>Tip:</b> Desktop Auto Save Mode use කළොත් <b>products.csv</b> සහ <b>products.json</b> දෙකම auto update වෙනවා. Price නිතර change කරන්න Excel වලින් <b>data/products.csv</b> open කරලා edit/save කරන්න. GitHub upload කරනකොට <b>data/products.csv</b> file එකත් upload කරන්න.</div>
           <div id="adminProductList" class="admin-product-list"></div>
           <div id="deletedPanel" class="deleted-panel"></div>
-          <h3>JSON Preview</h3>
+          <h3>Products Preview</h3>
           <div class="json-preview" id="jsonPreview">[]</div>
         </aside>
       </div>
@@ -148,7 +162,7 @@
     const clean=v=>String(v??'').trim();const upper=v=>clean(v).toUpperCase();
     const esc=s=>clean(s).replace(/[&<>\'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     const toast=msg=>{const t=$('#toast');if(!t){alert(msg);return}t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2300)};
-    let baseProducts=[];let imageData='';
+    let baseProducts=[];let imageData='';let selectedImageFile=null;let projectDirHandle=null;
 
     function splitField(v){if(Array.isArray(v))return v.map(clean).filter(Boolean);const raw=clean(v);if(!raw)return[];try{const x=JSON.parse(raw);if(Array.isArray(x))return x.map(clean).filter(Boolean)}catch(e){}return raw.split(/[|,;/]+/).map(clean).filter(Boolean)}
     function genLabel(g){g=String(g);if(g==='CORE2DUO')return 'CORE 2 DUO';const n=Number(g);return (n===2?'2ND':n===3?'3RD':`${n}TH`)+' GEN'}
@@ -180,6 +194,96 @@
       const support=values('pmStorageSupportTick');
       return normalize({id:$('#pmId').value,name:$('#pmName').value,category,condition:$('#pmCondition').value,price:$('#pmPrice').value,stock:$('#pmStock').value,image:imageData||$('#pmImage').value,description:$('#pmDescription').value,warrantyMonths:$('#pmWarrantyMonths').value,chipset:$('#pmChipset').value,socket:$('#pmSocket').value,storageType:$('#pmStorageType').value,m2Slots:$('#pmM2Slots').value,compatibleGenerations:values('pmGenTick'),compatibleRam:values('pmRamTick'),ramSlots:values('pmRamSlotTick'),storageSupport:support,sataSupport:support.includes('SATA SSD'),m2SataSupport:support.includes('M.2 SSD'),nvmeSupport:support.includes('NVME SSD'),compatibleMotherboardIds:values('pmBoardTick')})
     }
+    const CSV_HEADERS=['id','name','category','condition','price','generation','memory','chipset','socket','stock','image','description','warrantyMonths','storageType','m2SataSupport','nvmeSupport','m2Slots','compatibleGenerations','compatibleRam','ramSlots','storageSupport','compatibleMotherboardIds'];
+    function csvCell(v){
+      if(Array.isArray(v))v=v.join('|');
+      if(v===true)v='YES';
+      if(v===false)v='NO';
+      v=String(v ?? '');
+      return /[\",\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+    }
+    function productForCsv(p){
+      const n=normalize(p);
+      return {
+        id:n.id,name:n.name,category:n.category,condition:n.condition,price:n.price,generation:n.generation,memory:n.memory,chipset:n.chipset,socket:n.socket,stock:n.stock,image:n.image,description:n.description,warrantyMonths:n.warrantyMonths,storageType:n.storageType,m2SataSupport:n.m2SataSupport?'YES':'NO',nvmeSupport:n.nvmeSupport?'YES':'NO',m2Slots:n.m2Slots,compatibleGenerations:n.compatibleGenerations,compatibleRam:n.compatibleRam,ramSlots:n.ramSlots,storageSupport:n.storageSupport,compatibleMotherboardIds:n.compatibleMotherboardIds
+      };
+    }
+    function productsToCsv(items){
+      const rows=['sep=,', CSV_HEADERS.join(',')];
+      items.map(productForCsv).forEach(p=>rows.push(CSV_HEADERS.map(h=>csvCell(p[h])).join(',')));
+      return rows.join('\r\n')+'\r\n';
+    }
+    function parseCSV(text){
+      const rows=[];let row=[],field='',quoted=false;
+      for(let i=0;i<text.length;i++){
+        const c=text[i],n=text[i+1];
+        if(c==='"'){if(quoted&&n==='"'){field+='"';i++}else quoted=!quoted}
+        else if(c===','&&!quoted){row.push(field);field=''}
+        else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&n==='\n')i++;row.push(field);if(row.some(x=>String(x).trim()!==''))rows.push(row);row=[];field=''}
+        else field+=c;
+      }
+      row.push(field);if(row.some(x=>String(x).trim()!==''))rows.push(row);
+      if(rows.length && String(rows[0][0]||'').trim().toLowerCase().startsWith('sep=')) rows.shift();
+      if(rows.length<2)return[];
+      const headers=rows[0].map(h=>String(h||'').trim());
+      return rows.slice(1).map(cols=>{const obj={};headers.forEach((h,i)=>obj[h]=String(cols[i]??'').trim());return obj});
+    }
+    function slugifyFileName(name){
+      const base=clean(name).toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,70);
+      return base||'product-image';
+    }
+    function fileExt(file){
+      const fromName=(file?.name||'').split('.').pop();
+      const ext=(fromName&&fromName.length<=5?fromName:'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';
+      if(ext==='jpeg')return 'jpg';
+      return ext;
+    }
+    function autoImagePath(file=selectedImageFile){
+      if(!file)return clean($('#pmImage').value)||'';
+      return `assets/img/products/${slugifyFileName($('#pmName').value||'product')}.${fileExt(file)}`;
+    }
+    function updateAutoPathPreview(){
+      const el=$('#autoImagePathPreview');if(!el)return;
+      const path=selectedImageFile?autoImagePath(selectedImageFile):(clean($('#pmImage').value)||'Image path will appear here after selecting image.');
+      el.textContent=path;
+    }
+    async function getDirHandle(root,parts){
+      let dir=root;
+      for(const part of parts){dir=await dir.getDirectoryHandle(part,{create:true});}
+      return dir;
+    }
+    async function writeBlobToProject(path,blob){
+      if(!projectDirHandle)throw new Error('Website folder not selected');
+      const parts=path.split('/').filter(Boolean);const fileName=parts.pop();
+      const dir=await getDirHandle(projectDirHandle,parts);
+      const handle=await dir.getFileHandle(fileName,{create:true});
+      const writable=await handle.createWritable();
+      await writable.write(blob);await writable.close();
+    }
+    async function writeJsonToProject(items){
+      await writeBlobToProject('data/products.json',new Blob([JSON.stringify(items,null,2)],{type:'application/json'}));
+    }
+    async function writeCsvToProject(items){
+      await writeBlobToProject('data/products.csv',new Blob([productsToCsv(items)],{type:'text/csv;charset=utf-8'}));
+    }
+    async function persistProductsToProject(){
+      const data=mergedProducts().map(normalize);
+      await writeCsvToProject(data);
+      await writeJsonToProject(data);
+    }
+    async function saveImageToProject(file,path){
+      await writeBlobToProject(path,file);
+    }
+    async function requestProjectFolder(){
+      if(!('showDirectoryPicker' in window)){toast('Chrome / Edge browser එකෙන් localhost හරහා open කරන්න.');return;}
+      try{
+        projectDirHandle=await window.showDirectoryPicker({mode:'readwrite'});
+        const st=$('#folderStatus');if(st){st.textContent='Folder selected: '+projectDirHandle.name;st.classList.add('ready');}
+        updateAutoPathPreview();
+        toast('Website folder selected');
+      }catch(err){toast('Folder select cancelled');}
+    }
+
     function fillForm(p={}){
       const n=normalize(p);$('#pmId').value=n.id||'';$('#pmName').value=n.name||'';$('#pmCategory').value=n.category||'PROCESSOR';$('#pmCondition').value=n.condition||'USED';$('#pmPrice').value=n.price||'';$('#pmStock').value=n.stock||'';$('#pmWarrantyMonths').value=n.warrantyMonths||'';$('#pmImage').value=(n.image&&String(n.image).startsWith('data:'))?'':(n.image||'');$('#pmDescription').value=n.description||'';$('#pmChipset').value=n.chipset||'';$('#pmSocket').value=n.socket||'';$('#pmStorageType').value=n.storageType||'';$('#pmM2Slots').value=n.m2Slots||'';imageData=(n.image&&String(n.image).startsWith('data:'))?n.image:'';
       setValues('pmGenTick',n.compatibleGenerations);setValues('pmRamTick',n.compatibleRam);setValues('pmRamSlotTick',n.ramSlots);setValues('pmStorageSupportTick',n.storageSupport);setValues('pmBoardTick',n.compatibleMotherboardIds);updateSections();
@@ -209,20 +313,69 @@
       panel.innerHTML=ids.length?'<h3 style="margin-top:0">Deleted Products</h3>'+ids.map(id=>{const p=baseProducts.map(normalize).find(x=>String(x.id)===String(id));return `<div class="deleted-row"><div><b>${esc(p?.name||id)}</b><small>${esc(p?[p.category,p.chipset].filter(Boolean).join(' • '):'Deleted product')}</small></div><button class="btn btn-ghost btn-small" type="button" data-restore="${esc(id)}">Restore</button></div>`}).join(''):'<div class="mini-muted">No deleted products.</div>';
     }
     function renderAll(){renderMotherboardPicker();renderList()}
-    async function loadBase(){try{const res=await fetch('data/products.json',{cache:'no-store'});if(res.ok){baseProducts=(await res.json()).map(normalize)}}catch(e){baseProducts=[]}renderAll()}
+    async function loadBase(){
+      baseProducts=[];
+      try{
+        const res=await fetch('data/products.csv?v='+Date.now(),{cache:'no-store'});
+        if(res.ok){
+          const rows=parseCSV(await res.text());
+          if(rows.length)baseProducts=rows.map(normalize);
+        }
+      }catch(e){console.warn('products.csv load failed',e)}
+      if(!baseProducts.length){
+        try{const res=await fetch('data/products.json?v='+Date.now(),{cache:'no-store'});if(res.ok){baseProducts=(await res.json()).map(normalize)}}catch(e){baseProducts=[]}
+      }
+      renderAll()
+    }
     categories.forEach(c=>{$('#pmCategory').insertAdjacentHTML('beforeend',`<option value="${c}">${c}</option>`)});
     $('#pmCategory').addEventListener('change',updateSections);$('#adminSearch').addEventListener('input',renderList);
     $$('[data-clear]').forEach(btn=>btn.addEventListener('click',()=>{setValues(btn.dataset.clear,[]);updateSections()}));
-    $('#pmImageFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{imageData=r.result;toast('Image loaded')};r.readAsDataURL(f)});
-    $('#productManagerForm').addEventListener('submit',e=>{e.preventDefault();const p=selectedProduct();if(!p.name||!p.category){toast('Product name and category required');return}if(!p.id)p.id=productId(p.name,p.category);const local=getLocal().map(normalize).filter(x=>x.id!==p.id);local.push(p);localStorage.setItem(KEY,JSON.stringify(local));const deleted=getDeleted().filter(id=>id!==p.id);localStorage.setItem(DEL_KEY,JSON.stringify(deleted));renderAll();fillForm({category:p.category});toast('Product saved / updated locally')});
+    $('#selectProjectFolderBtn')?.addEventListener('click',requestProjectFolder);
+    $('#pmName').addEventListener('input',updateAutoPathPreview);
+    $('#pmImageFile').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];if(!f)return;selectedImageFile=f;const path=autoImagePath(f);$('#pmImage').value=path;imageData='';updateAutoPathPreview();if(projectDirHandle){toast('Image ready: '+path)}else{toast('Image selected. Select Website Folder to auto save.')}});
+    $('#productManagerForm').addEventListener('submit',async e=>{
+      e.preventDefault();
+      let p=selectedProduct();
+      if(!p.name||!p.category){toast('Product name and category required');return}
+      if(!p.id)p.id=productId(p.name,p.category);
+      try{
+        if(projectDirHandle&&selectedImageFile){
+          const path=autoImagePath(selectedImageFile);
+          await saveImageToProject(selectedImageFile,path);
+          p.image=path;
+          $('#pmImage').value=path;
+          imageData='';
+        }
+        const local=getLocal().map(normalize).filter(x=>x.id!==p.id);
+        local.push(p);
+        localStorage.setItem(KEY,JSON.stringify(local));
+        const deleted=getDeleted().filter(id=>id!==p.id);
+        localStorage.setItem(DEL_KEY,JSON.stringify(deleted));
+        renderAll();
+        if(projectDirHandle){
+          await persistProductsToProject();
+          toast('Saved: image + Excel CSV + products.json updated');
+        }else{
+          toast('Product saved locally. Select folder for auto file save.');
+        }
+        selectedImageFile=null;
+        $('#pmImageFile').value='';
+        updateAutoPathPreview();
+        fillForm({category:p.category});
+      }catch(err){
+        console.error(err);
+        toast('Auto save failed. Check folder permission.');
+      }
+    });
     $('#newProductBtn').addEventListener('click',()=>fillForm({category:$('#pmCategory').value||'PROCESSOR'}));
+    $('#downloadCsvBtn')?.addEventListener('click',()=>{const data=mergedProducts().map(normalize);const blob=new Blob([productsToCsv(data)],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='products.csv';a.click();URL.revokeObjectURL(a.href);toast('products.csv downloaded')});
     $('#downloadJsonBtn').addEventListener('click',()=>{const data=mergedProducts().map(normalize);const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='products.json';a.click();URL.revokeObjectURL(a.href);toast('products.json downloaded')});
     $('#clearLocalProductsBtn').addEventListener('click',()=>{if(confirm('Reset all local edits and deleted marks?')){localStorage.removeItem(KEY);localStorage.removeItem(DEL_KEY);renderAll();toast('Local edits reset')}});
     $('#adminProductList').addEventListener('click',e=>{const edit=e.target.closest('[data-edit]');const del=e.target.closest('[data-delete]');if(edit){const p=mergedProducts().map(normalize).find(x=>String(x.id)===String(edit.dataset.edit));if(p){fillForm(p);window.scrollTo({top:0,behavior:'smooth'});toast('Editing: '+p.name)}}if(del){const id=String(del.dataset.delete);const p=mergedProducts().map(normalize).find(x=>String(x.id)===id);if(confirm(`Delete ${p?.name||'this product'}?
 
-මෙය products.json download කරනකොට final file එකෙන් ඉවත් වෙනවා.`)){const local=getLocal().filter(p=>String(p.id)!==id);localStorage.setItem(KEY,JSON.stringify(local));if(isBaseProduct(id)){const deleted=getDeleted();if(!deleted.includes(id))deleted.push(id);localStorage.setItem(DEL_KEY,JSON.stringify(deleted));}renderAll();toast('Product deleted')}}});
+මෙය products.json download කරනකොට final file එකෙන් ඉවත් වෙනවා.`)){const local=getLocal().filter(p=>String(p.id)!==id);localStorage.setItem(KEY,JSON.stringify(local));if(isBaseProduct(id)){const deleted=getDeleted();if(!deleted.includes(id))deleted.push(id);localStorage.setItem(DEL_KEY,JSON.stringify(deleted));}renderAll();if(projectDirHandle){persistProductsToProject().then(()=>toast('Deleted + Excel CSV updated')).catch(()=>toast('Deleted locally. Auto file update failed.'))}else{toast('Product deleted')}}}});
     $('#showDeletedBtn')?.addEventListener('click',()=>{$('#deletedPanel')?.classList.toggle('show');renderDeletedPanel()});
-    $('#deletedPanel')?.addEventListener('click',e=>{const r=e.target.closest('[data-restore]');if(!r)return;const id=String(r.dataset.restore);localStorage.setItem(DEL_KEY,JSON.stringify(getDeleted().filter(x=>x!==id)));renderAll();toast('Product restored')});
+    $('#deletedPanel')?.addEventListener('click',e=>{const r=e.target.closest('[data-restore]');if(!r)return;const id=String(r.dataset.restore);localStorage.setItem(DEL_KEY,JSON.stringify(getDeleted().filter(x=>x!==id)));renderAll();if(projectDirHandle){persistProductsToProject().then(()=>toast('Restored + Excel CSV updated')).catch(()=>toast('Restored locally. Auto file update failed.'))}else{toast('Product restored')}});
     fillForm({category:'PROCESSOR'});loadBase();
   })();
   </script>
