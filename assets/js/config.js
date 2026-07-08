@@ -8,7 +8,7 @@ window.SC_CONFIG = {
   // Google Sheets Product Database link එක මෙතනට paste කරන්න.
   // Google Sheet එක File → Share → Publish to web → CSV හෝ anyone-view link එකක් දාන්න.
   // Website එක products page / quotation page දෙකටම මේ Sheet එකෙන් live products load කරයි.
-  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTkOQE0MkdnCbRgI1dk7D9K6eYRMMV3dvm8vRbah_6lDmnlbfR-8WDQeHcDTvOC3jr3n8fwlE6-fVlZ/pub?gid=289479806&single=true&output=csv",
+  sheetCsvUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTwLl4SOZ5RqwaTLhM0S4MzS7glm_eweCHPq5GLOw9aXzkiORM5lHIlC87WlxtuKpIdU8wvxUaX8wE6/pub?gid=2061392759&single=true&output=csv",
 
   bank: {
     name: "BOC BANK",
