@@ -29,11 +29,7 @@
     7:{label:'7TH GEN',ram:'DDR4',chipsets:['H110','H110 M.2','B150','B250','Z270','H270','H170'],socket:'LGA1151'},
     8:{label:'8TH GEN',ram:'DDR4',chipsets:['B360','B365','Z360','H370'],socket:'LGA1151'},
     9:{label:'9TH GEN',ram:'DDR4',chipsets:['B360','B365','Z360','H370','H410'],socket:'LGA1151'},
-    10:{label:'10TH GEN',ram:'DDR4',chipsets:['H410'],socket:'LGA1200'},
-    11:{label:'11TH GEN',ram:'DDR4',chipsets:[],socket:'LGA1200'},
-    12:{label:'12TH GEN',ram:'DDR4',chipsets:[],socket:'LGA1700'},
-    13:{label:'13TH GEN',ram:'DDR4',chipsets:[],socket:'LGA1700'},
-    14:{label:'14TH GEN',ram:'DDR4',chipsets:[],socket:'LGA1700'}
+    10:{label:'10TH GEN',ram:'DDR4',chipsets:['H410'],socket:'LGA1200'}
   };
 
   const DEFAULT_PRODUCTS = [
@@ -629,7 +625,7 @@
     return m?m[0]:'';
   }
   function parseGenerations(v){
-    if(Array.isArray(v))return v.map(normalizeGenKey).filter(Boolean);
+    if(Array.isArray(v))return [...new Set(v.map(normalizeGenKey).filter(Boolean))];
     const raw=upper(v);
     if(!raw)return [];
     const out=[];
@@ -642,8 +638,47 @@
   function genLabel(g){const key=normalizeGenKey(g);if(!key)return '';if(key==='CORE2DUO')return 'CORE 2 DUO';const n=Number(key);return (n===2?'2ND':n===3?'3RD':`${n}TH`)+' GEN'}
   function productImage(p){return clean(p.image)||'assets/img/logo.jpg'}
   function boolish(v){if(v===true)return true;const x=upper(v);return ['YES','Y','TRUE','1','SUPPORTED','SUPPORT'].includes(x)}
+  function field(p,...names){
+    for(const name of names){
+      if(p[name]!==undefined && clean(p[name])!=='')return p[name];
+      const target=upper(name).replace(/[^A-Z0-9]/g,'');
+      const key=Object.keys(p).find(k=>upper(k).replace(/[^A-Z0-9]/g,'')===target);
+      if(key && clean(p[key])!=='')return p[key];
+    }
+    return '';
+  }
+  function normalizeCondition(v){
+    const x=upper(v||'USED').replace(/\s+/g,' ');
+    if(x.includes('BRAND')||x==='NEW')return 'BRAND NEW';
+    return 'USED';
+  }
+  function normalizeRam(v){
+    const x=upper(v).replace(/\s+/g,'');
+    if(x.includes('DDR5'))return 'DDR5';
+    if(x.includes('DDR4'))return 'DDR4';
+    if(x.includes('DDR3'))return 'DDR3';
+    if(x.includes('DDR2'))return 'DDR2';
+    return upper(v);
+  }
+  function monitorSizeValue(v){
+    const m=clean(v).match(/\d+/);
+    return m?m[0]:'';
+  }
+  function parseSsdSupport(v){
+    const x=upper(v).replace(/\s+/g,' ');
+    if(!x)return {sata:false,m2:false,nvme:false,label:''};
+    const hasNvme=x.includes('NVME');
+    const hasM2=x.includes('M.2')||x.includes('M2');
+    const hasSata=x.includes('SATA')||x.includes('SSD');
+    if(x.includes('SATA ONLY'))return {sata:true,m2:false,nvme:false,label:'SATA ONLY'};
+    if(x.includes('SATA AND M.2')||x.includes('SATA & M.2'))return {sata:true,m2:true,nvme:false,label:'SATA + M.2'};
+    if(hasNvme)return {sata:true,m2:true,nvme:true,label:'SATA + M.2 + NVMe'};
+    if(hasM2)return {sata:true,m2:true,nvme:false,label:'SATA + M.2'};
+    if(hasSata)return {sata:true,m2:false,nvme:false,label:'SATA ONLY'};
+    return {sata:false,m2:false,nvme:false,label:''};
+  }
   function storageType(p){
-    const v=upper(p.storageType||p.storage_type||p.storage||p.interface||p.ssdType||p.ssd_type);
+    const v=upper(field(p,'SSD TYPE','storageType','storage_type','storage','interface','ssdType','ssd_type'));
     if(v.includes('NVME'))return 'NVME SSD';
     if(v.includes('M.2')||v.includes('M2'))return 'M.2 SSD';
     if(v.includes('SATA'))return 'SATA SSD';
@@ -651,6 +686,49 @@
     return '';
   }
   function storageLabel(p){return storageType(p)}
+
+  function normalizeProduct(p,i=0){
+    const category=categoryName(field(p,'CATEGORY','category'));
+    const mbGens=[field(p,'MB GEN OPTION 1','mbGenOption1','mb_gen_option_1'),field(p,'MB GEN OPTION 2','mbGenOption2','mb_gen_option_2')].flatMap(parseGenerations).filter(Boolean);
+    const procGens=parseGenerations(field(p,'PROCESSOR GEN','processorGen','processor_gen'));
+    const oldGens=parseGenerations(field(p,'compatibleGenerations','compatible_generations','supportedGens','supported_gens','generation','gen'));
+    const gens=[...new Set([...(category==='MOTHERBOARD'?mbGens:[]),...(category==='PROCESSOR'?procGens:[]),...oldGens])];
+    const g=gens[0]||'';
+    const ssdSup=parseSsdSupport(field(p,'SSD SUPPORT','SSD','ssdSupport','storageSupport','storage_support'));
+    const memory=normalizeRam(field(p,'RAM SUPPORT','memory','ram','ram_type','RAM'));
+    const item={
+      id:clean(field(p,'PRODUCT ID','productId','product_id','id'))||`ITEM-${i+1}`,
+      name:clean(field(p,'PRODUCT NAME','productName','product_name','name'))||'Product',
+      category,
+      condition:normalizeCondition(field(p,'CONDITION','condition')),
+      price:toNumber(field(p,'PRICE','price')),
+      generation:g,
+      generations:gens,
+      compatibleGenerations:gens,
+      generationLabel:gens.length?gens.map(genLabel).join(' / '):'',
+      memory,
+      chipset:upper(field(p,'CHIPSET','chipset')),
+      socket:upper(field(p,'SOCKET','socket')),
+      stock:clean(field(p,'STOCK','stock')),
+      image:clean(field(p,'IMAGE','image'))||'assets/img/logo.jpg',
+      description:clean(field(p,'DESCRIPTION','description')),
+      warranty:clean(field(p,'WARRANTY','warranty','warranty_period','warrantyPeriod')),
+      warrantyMonths:clean(field(p,'WARRANTY MONTHS','warrantyMonths','warranty_months','warrantyMonth')),
+      storageType:storageType({...p,category}),
+      sataSupport:ssdSup.sata,
+      m2SataSupport:ssdSup.m2,
+      nvmeSupport:ssdSup.nvme,
+      ssdSupportLabel:ssdSup.label,
+      monitorSize:monitorSizeValue(field(p,'MONITOR SIZE','monitorSize','monitor_size')),
+      m2Slots:clean(field(p,'M2 SLOTS','m2Slots','m2_slots')),
+      ramSlot2:boolish(field(p,'RAM SLOT 2','ramSlot2','ram_slot_2')),
+      ramSlot4:boolish(field(p,'RAM SLOT 4','ramSlot4','ram_slot_4'))
+    };
+    if(item.category==='MOTHERBOARD' && !item.ramSlot2 && !item.ramSlot4)item.ramSlot2=true;
+    if(item.category==='SSD' && !item.storageType)item.storageType='SATA SSD';
+    return item;
+  }
+
   function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2300)}
   function todayString(){return new Date().toLocaleDateString('en-LK',{year:'numeric',month:'short',day:'2-digit'})}
   function quoteNo(){return 'SCQ-'+new Date().toISOString().slice(0,10).replace(/-/g,'')+'-'+Math.floor(1000+Math.random()*9000)}
@@ -668,81 +746,6 @@
     if(rows.length<2)return[];
     const headers=rows[0].map(h=>clean(h));
     return rows.slice(1).map(cols=>{const obj={};headers.forEach((h,i)=>obj[h]=clean(cols[i]??''));return obj});
-  }
-
-  function firstVal(obj,keys){for(const k of keys){if(obj&&obj[k]!==undefined&&clean(obj[k])!=='')return obj[k]}return ''}
-  function conditionOk(p,condition){
-    const c=upper(condition);
-    if(!c)return true;
-    const pc=upper(p.condition);
-    if(c==='BRAND NEW'||c==='NEW')return pc==='BRAND NEW'||pc==='NEW';
-    return pc===c;
-  }
-  function inferMonitorSize(p){
-    const direct=clean(firstVal(p,['monitorSize','monitor_size','screenSize','screen_size','size','inch','inches']));
-    const raw=direct||clean(p.name);
-    const m=String(raw).match(/\b(19|20|22|24|27|29|32)\b/);
-    return m?m[1]:'';
-  }
-  function parseGenColumns(p){
-    const out=[];
-    for(let n=2;n<=14;n++){
-      if(boolish(p[`gen${n}`]||p[`GEN${n}`]||p[`${n}gen`]||p[`${n}Gen`]||p[`gen_${n}`]))out.push(String(n));
-    }
-    return out;
-  }
-  function parseRamSupportColumns(p){
-    const out=[];
-    if(boolish(p.ramDdr3||p.ramDDR3||p.ddr3||p.DDR3))out.push('DDR3');
-    if(boolish(p.ramDdr4||p.ramDDR4||p.ddr4||p.DDR4))out.push('DDR4');
-    if(boolish(p.ramDdr5||p.ramDDR5||p.ddr5||p.DDR5))out.push('DDR5');
-    const text=upper(p.ramSupport||p.ram_support||p.memory||p.ram||p.ram_type);
-    ['DDR2','DDR3','DDR4','DDR5'].forEach(r=>{if(text.includes(r)&&!out.includes(r))out.push(r)});
-    return out;
-  }
-  function normalizeProduct(p,i=0){
-    const genCols=parseGenColumns(p);
-    const gens=genCols.length?genCols:parseGenerations(p.compatibleGenerations||p.compatible_generations||p.supportedGens||p.supported_gens||p.generation||p.gen);
-    const g=gens[0]||'';
-    const ramSupport=parseRamSupportColumns(p);
-    const mem=ramSupport[0]||upper(p.memory||p.ram||p.ram_type);
-    const sataRaw=firstVal(p,['sataSsd','sataSSD','sataSupport','sata_support']);
-    const hasSata=clean(sataRaw)!=='';
-    const sataOk=hasSata?boolish(sataRaw):true;
-    const m2Ok=boolish(p.m2Ssd||p.m2SSD||p.m2SataSupport||p.m2_sata_support||p.m2Sata||p.m2_sata);
-    const nvmeOk=boolish(p.nvmeSsd||p.nvmeSSD||p.nvmeSupport||p.nvme_support||p.nvme);
-    return {
-      id:clean(p.id)||`ITEM-${i+1}`,
-      name:clean(p.name)||'Product',
-      category:categoryName(p.category),
-      condition:upper(p.condition||'USED'),
-      price:toNumber(p.price),
-      generation:g,
-      generations:gens,
-      compatibleGenerations:gens,
-      generationLabel:gens.length?gens.map(genLabel).join(' / '):'',
-      memory:mem,
-      ramSupport:ramSupport.length?ramSupport:(mem?[mem]:[]),
-      ramSlot2:boolish(p.ramSlot2||p.ram_slot_2||p.slot2||p.ram2),
-      ramSlot4:boolish(p.ramSlot4||p.ram_slot_4||p.slot4||p.ram4),
-      chipset:upper(p.chipset),
-      socket:upper(p.socket),
-      stock:clean(p.stock),
-      image:clean(p.image)||'assets/img/logo.jpg',
-      description:clean(p.description),
-      warranty:clean(p.warranty||p.warranty_period||p.warrantyPeriod),
-      warrantyMonths:clean(p.warrantyMonths||p.warranty_months||p.warrantyMonth),
-      storageType:storageType(p),
-      sataSupport:sataOk,
-      sataSsd:sataOk,
-      m2SataSupport:m2Ok,
-      m2Ssd:m2Ok,
-      nvmeSupport:nvmeOk,
-      nvmeSsd:nvmeOk,
-      m2Slots:clean(p.m2Slots||p.m2_slots),
-      monitorSize:inferMonitorSize(p),
-      compatibleMotherboardIds:clean(p.compatibleMotherboardIds||p.compatible_motherboard_ids||p.compatibleBoards||p.compatible_boards)
-    };
   }
 
   function warrantyText(p){
@@ -812,10 +815,10 @@
   function productCard(p){
     return `<article class="card product-card" data-product-id="${esc(p.id)}" tabindex="0" aria-label="View ${esc(p.name)} details">
       <div class="product-img-wrap"><img src="${esc(productImage(p))}" alt="${esc(p.name)}" onerror="this.src='assets/img/logo.jpg'">
-        <div class="tag-row"><span class="tag ${p.condition==='NEW'?'new':'used'}">${esc(p.condition)}</span>${p.memory?`<span class="tag">${esc(p.memory)}</span>`:''}${storageLabel(p)?`<span class="tag">${esc(storageLabel(p))}</span>`:''}${p.generation?`<span class="tag">${esc(p.generationLabel)}</span>`:''}</div>
+        <div class="tag-row"><span class="tag ${p.condition==='BRAND NEW'?'new':'used'}">${esc(p.condition)}</span>${p.memory?`<span class="tag">${esc(p.memory)}</span>`:''}${storageLabel(p)?`<span class="tag">${esc(storageLabel(p))}</span>`:''}${p.monitorSize?`<span class="tag">${esc(p.monitorSize)} inch</span>`:''}${p.generation?`<span class="tag">${esc(p.generationLabel)}</span>`:''}</div>
       </div>
       <div class="product-body"><h3>${esc(p.name)}</h3>
-        <div class="meta"><span>${esc(p.category)}</span>${p.chipset?`<span>${esc(p.chipset)}</span>`:''}${p.socket?`<span>${esc(p.socket)}</span>`:''}${storageLabel(p)?`<span>${esc(storageLabel(p))}</span>`:''}</div>
+        <div class="meta"><span>${esc(p.category)}</span>${p.chipset?`<span>${esc(p.chipset)}</span>`:''}${p.socket?`<span>${esc(p.socket)}</span>`:''}${storageLabel(p)?`<span>${esc(storageLabel(p))}</span>`:''}${p.monitorSize?`<span>${esc(p.monitorSize)} inch</span>`:''}</div>
         <div class="price">${money(p.price)}</div><div class="stock">Stock: ${esc(p.stock||'Contact')} • Warranty: ${esc(warrantyText(p))}</div>
         <div class="product-actions"><button class="btn btn-ghost btn-small" data-view-product="${esc(p.id)}">View Details</button><button class="btn btn-primary btn-small" data-add-to-cart="${esc(p.id)}">Add to cart</button></div>
       </div></article>`;
@@ -857,7 +860,7 @@
     content.innerHTML=`<div class="product-modal-grid">
       <div class="product-modal-image"><img src="${esc(productImage(p))}" alt="${esc(p.name)}" onerror="this.src='assets/img/logo.jpg'"></div>
       <div class="product-modal-info">
-        <div class="modal-tag-row"><span class="tag ${p.condition==='NEW'?'new':'used'}">${esc(p.condition)}</span>${p.category?`<span class="tag">${esc(p.category)}</span>`:''}${p.memory?`<span class="tag">${esc(p.memory)}</span>`:''}${storageLabel(p)?`<span class="tag">${esc(storageLabel(p))}</span>`:''}${p.generation?`<span class="tag">${esc(p.generationLabel)}</span>`:''}</div>
+        <div class="modal-tag-row"><span class="tag ${p.condition==='BRAND NEW'?'new':'used'}">${esc(p.condition)}</span>${p.category?`<span class="tag">${esc(p.category)}</span>`:''}${p.memory?`<span class="tag">${esc(p.memory)}</span>`:''}${storageLabel(p)?`<span class="tag">${esc(storageLabel(p))}</span>`:''}${p.monitorSize?`<span class="tag">${esc(p.monitorSize)} inch</span>`:''}${p.generation?`<span class="tag">${esc(p.generationLabel)}</span>`:''}</div>
         <h2 id="productModalTitle">${esc(p.name)}</h2>
         <div class="product-modal-price">${money(p.price)}</div>
         <p class="product-modal-description">${esc(p.description||'Please contact Sandaruwan Computer for more details, availability and final confirmation before payment.')}</p>
@@ -867,7 +870,7 @@
           ${p.chipset?`<div><span>Chipset</span><b>${esc(p.chipset)}</b></div>`:''}
           ${p.socket?`<div><span>Socket</span><b>${esc(p.socket)}</b></div>`:''}
           ${storageLabel(p)?`<div><span>Storage Type</span><b>${esc(storageLabel(p))}</b></div>`:''}
-          ${p.category==='MOTHERBOARD'?`<div><span>M.2 / NVMe Support</span><b>${p.nvmeSupport?'NVMe supported':p.m2SataSupport?'M.2 SATA supported':'SATA only / confirm model'}</b></div>`:''}
+          ${p.category==='MOTHERBOARD'?`<div><span>SSD Support</span><b>${esc(p.ssdSupportLabel||'SATA only')}</b></div>`:''}${p.monitorSize?`<div><span>Monitor Size</span><b>${esc(p.monitorSize)} inch</b></div>`:''}
         </div>
         <div class="product-modal-order">
           <label for="modalProductQty">Quantity</label>
@@ -895,11 +898,11 @@
     const inputs=['#productSearch','#categoryFilter','#conditionFilter','#memoryFilter','#generationFilter','#storageFilter','#monitorSizeFilter'].map(id=>$(id)).filter(Boolean);
     inputs.forEach(el=>['input','change'].forEach(ev=>el.addEventListener(ev,render)));
     function render(){
-      const q=upper($('#productSearch')?.value);const cat=upper($('#categoryFilter')?.value);const cond=upper($('#conditionFilter')?.value);const mem=upper($('#memoryFilter')?.value);const gen=normalizeGenKey($('#generationFilter')?.value||'');const store=upper($('#storageFilter')?.value);const monSize=clean($('#monitorSizeFilter')?.value);
+      const q=upper($('#productSearch')?.value);const cat=upper($('#categoryFilter')?.value);const cond=upper($('#conditionFilter')?.value);const mem=upper($('#memoryFilter')?.value);const gen=normalizeGenKey($('#generationFilter')?.value||'');const store=upper($('#storageFilter')?.value);const mon=monitorSizeValue($('#monitorSizeFilter')?.value||'');
       const filtered=products.filter(p=>{
-        const hay=upper([p.name,p.category,p.condition,p.memory,p.generationLabel,p.chipset,p.socket,p.description,storageLabel(p)].join(' '));
+        const hay=upper([p.name,p.category,p.condition,p.memory,p.generationLabel,p.chipset,p.socket,p.description,storageLabel(p),p.monitorSize].join(' '));
         const pGens=(p.generations&&p.generations.length?p.generations:parseGenerations(p.generation)).map(String);
-        return (!q||hay.includes(q))&&(!cat||p.category===cat)&&(!cond||conditionOk(p,cond))&&(!mem||p.memory===mem||ramSupports(p).includes(mem))&&(!gen||pGens.includes(String(gen))||String(p.generation)===String(gen))&&(!store||storageType(p)===store)&&(!monSize||String(p.monitorSize)===String(monSize));
+        return (!q||hay.includes(q))&&(!cat||p.category===cat)&&(!cond||p.condition===cond)&&(!mem||p.memory===mem)&&(!gen||pGens.includes(String(gen))||String(p.generation)===String(gen))&&(!store||storageType(p)===store)&&(!mon||String(p.monitorSize)===String(mon));
       });
       $('#resultCount')&&( $('#resultCount').textContent=`${filtered.length} items found` );
       grid.innerHTML=filtered.length?filtered.map(productCard).join(''):'<div class="empty-state card">No matching products found.</div>';
@@ -988,179 +991,139 @@ Please confirm availability and final price.`;
 
   function isSsdCompatibleWithBoard(ssd,board){
     const type=storageType(ssd);
-    if(!type||type==='SATA SSD')return !board || board.sataSsd!==false;
+    if(!type||type==='SATA SSD')return true;
     if(!board)return true;
-    if(type==='M.2 SSD')return !!(board.m2Ssd||board.m2SataSupport);
-    if(type==='NVME SSD')return !!(board.nvmeSsd||board.nvmeSupport);
+    if(type==='M.2 SSD')return !!board.m2SataSupport;
+    if(type==='NVME SSD')return !!board.nvmeSupport;
     return true;
   }
-
-  function optionHTML(p){
-    const bits=[];
-    if(p.category==='MONITOR'&&p.monitorSize)bits.push(`${p.monitorSize} inch`);
-    if(storageLabel(p))bits.push(storageLabel(p));
-    if(p.memory)bits.push(p.memory);
-    if(p.condition)bits.push(p.condition);
-    return `<option value="${esc(p.id)}">${esc(p.name)} — ${money(p.price)}${bits.length?` • ${esc(bits.join(' • '))}`:''}</option>`;
+  function conditionFor(cat){return upper($(`[data-condition-for="${cat}"]`)?.value||'')}
+  function filterByCondition(items,cat){const c=conditionFor(cat);return c?items.filter(p=>p.condition===c):items}
+  function itemQtyFor(p){
+    if(!p)return 1;
+    if(p.category==='RAM')return Math.max(1,Number($('#quoteRamQty')?.value||1));
+    if(p.category==='SSD')return Math.max(1,Number($('#quoteSsdQty')?.value||1));
+    if(p.category==='HARD DISK')return Math.max(1,Number($('#quoteHardDiskQty')?.value||1));
+    return 1;
   }
+
+  function optionHTML(p){return `<option value="${esc(p.id)}">${esc(p.name)} — ${money(p.price)}${storageLabel(p)?` • ${esc(storageLabel(p))}`:''}${p.condition?` (${esc(p.condition)})`:''}</option>`}
   function fillSelect(sel,items,placeholder){if(!sel)return;sel.innerHTML=`<option value="">${esc(placeholder)}</option>`+items.map(optionHTML).join('');sel.disabled=false}
   function byId(products,id){return products.find(p=>p.id===id)}
-  function quoteCondition(cat){return clean(document.querySelector(`[data-condition-for="${cat}"]`)?.value||'')}
-  function applyQuoteCondition(items,cat){return items.filter(p=>conditionOk(p,quoteCondition(cat)))}
-  function ramSupports(p){return (p.ramSupport&&p.ramSupport.length?p.ramSupport:(p.memory?[p.memory]:[])).map(upper).filter(Boolean)}
-  function boardSupportsGen(board,gen){
-    if(!gen)return true;
-    const gens=(board.generations&&board.generations.length?board.generations:parseGenerations(board.generation));
-    return gens.map(String).includes(String(gen));
-  }
 
   async function initQuotationPage(){
     const products=await loadProducts();quoteProducts=products;
-    const processor=$('#quoteProcessor'),mobo=$('#quoteMotherboard'),ram=$('#quoteRam'),ssdSel=$('#quoteSsd'),monitorSize=$('#quoteMonitorSize'),monitorSel=$('#quoteMonitor'),ramSlot=$('#quoteRamSlot');
+    const processor=$('#quoteProcessor'),mobo=$('#quoteMotherboard'),ram=$('#quoteRam'),ssdSel=$('#quoteSsd'),monitorSel=$('#quoteMonitor'),monitorSize=$('#quoteMonitorSize'),ramSlot=$('#quoteRamSlot');
     if(!processor)return;
-
-    function fillProcessors(){
-      const current=processor.value;
-      fillSelect(processor,applyQuoteCondition(products.filter(p=>p.category==='PROCESSOR'),'PROCESSOR'),'Select processor');
-      if(products.some(p=>p.id===current && p.category==='PROCESSOR' && conditionOk(p,quoteCondition('PROCESSOR'))))processor.value=current;
-    }
-    function fillCategorySelect(cat){
-      const sel=document.querySelector(`[data-quote-select="${cat}"]`);
-      if(!sel || cat==='SSD' || cat==='MONITOR')return;
-      const current=sel.value;
-      const items=applyQuoteCondition(products.filter(p=>p.category===cat),cat);
-      fillSelect(sel,items,`Skip ${cat}`);
-      if(items.some(p=>p.id===current))sel.value=current;
-    }
-    function fillGeneralSelects(){
-      ['CPU COOLER','CASING','HARD DISK','POWER SUPPLY','KEYBOARD','MOUSE','SPEAKER','HEADSET'].forEach(fillCategorySelect);
-    }
-    function filterRamSlotSelect(){
-      if(!ramSlot)return;
-      const board=byId(products,mobo?.value);
-      ramSlot.innerHTML='';
-      if(!board){ramSlot.innerHTML='<option value="">Select motherboard first</option>';ramSlot.disabled=true;return;}
-      const opts=[];
-      if(board.ramSlot2 || (!board.ramSlot2 && !board.ramSlot4))opts.push(['2','RAM Slot 2']);
-      if(board.ramSlot4)opts.push(['4','RAM Slot 4 (+ Rs. 500)']);
-      ramSlot.innerHTML='<option value="">Select RAM slot option</option>'+opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');
-      ramSlot.disabled=false;
+    const refreshBasicSelects=()=>{
+      fillSelect(processor,filterByCondition(products.filter(p=>p.category==='PROCESSOR'),'PROCESSOR'),'Select processor');
+      $all('[data-quote-select]').forEach(sel=>{
+        const cat=sel.getAttribute('data-quote-select');
+        if(['SSD','MONITOR'].includes(cat))return;
+        fillSelect(sel,filterByCondition(products.filter(p=>p.category===cat),cat),`Skip ${cat}`);
+      });
+      filterMonitorSelect();
+      filterSsdSelect();
+    };
+    function filterMotherboardAndRam(){
+      const cpu=byId(products,processor?.value);
+      if(!cpu){
+        if(mobo){mobo.innerHTML='<option value="">Select processor first</option>';mobo.disabled=true;}
+        if(ram){ram.innerHTML='<option value="">Select processor first</option>';ram.disabled=true;}
+        if(ramSlot){ramSlot.innerHTML='<option value="">Select motherboard first</option>';ramSlot.disabled=true;}
+        filterSsdSelect();renderQuote();return;
+      }
+      const cpuGens=cpu.generations&&cpu.generations.length?cpu.generations:parseGenerations(cpu.generation);
+      const motherboards=filterByCondition(products.filter(p=>{
+        if(p.category!=='MOTHERBOARD')return false;
+        const boardGens=p.generations&&p.generations.length?p.generations:parseGenerations(p.generation);
+        return cpuGens.some(g=>boardGens.includes(g));
+      }),'MOTHERBOARD');
+      fillSelect(mobo,motherboards,'Select compatible motherboard');
+      filterRamSelect();
+      filterSsdSelect();
+      renderQuote();
     }
     function filterRamSelect(){
-      if(!ram)return;
-      const current=ram.value;
-      const cpu=byId(products,processor.value);
       const board=byId(products,mobo?.value);
-      let allowedRam=[];
-      if(board)allowedRam=ramSupports(board);
-      else if(cpu){
-        const gen=normalizeGenKey(cpu.generation||cpu.generations?.[0]);
-        const boards=products.filter(p=>p.category==='MOTHERBOARD'&&conditionOk(p,quoteCondition('MOTHERBOARD'))&&boardSupportsGen(p,gen));
-        allowedRam=[...new Set(boards.flatMap(ramSupports))];
-        if(!allowedRam.length)allowedRam=ramSupports(cpu);
+      const cpu=byId(products,processor?.value);
+      const requiredRam=board?.memory || cpu?.memory || '';
+      const rams=filterByCondition(products.filter(p=>p.category==='RAM' && (!requiredRam || p.memory===requiredRam)),'RAM');
+      fillSelect(ram,rams,requiredRam?`Select ${requiredRam} RAM`:'Select RAM');
+      if(ramSlot){
+        if(!board){ramSlot.innerHTML='<option value="">Select motherboard first</option>';ramSlot.disabled=true;}
+        else{
+          const opts=[];
+          if(board.ramSlot2!==false)opts.push('<option value="2">RAM Slot 2</option>');
+          if(board.ramSlot4)opts.push('<option value="4">RAM Slot 4 (+ Rs. 500)</option>');
+          ramSlot.innerHTML=opts.length?opts.join(''):'<option value="2">RAM Slot 2</option>';
+          ramSlot.disabled=false;
+        }
       }
-      let rams=products.filter(p=>p.category==='RAM'&&conditionOk(p,quoteCondition('RAM')));
-      if(allowedRam.length)rams=rams.filter(p=>allowedRam.includes(upper(p.memory))||ramSupports(p).some(r=>allowedRam.includes(r)));
-      fillSelect(ram,rams,allowedRam.length?`Select ${allowedRam.join(' / ')} RAM`:'Select RAM');
-      if(rams.some(p=>p.id===current))ram.value=current;
     }
     function filterSsdSelect(){
       if(!ssdSel)return;
       const current=ssdSel.value;
       const board=byId(products,mobo?.value);
-      const ssds=products.filter(p=>p.category==='SSD'&&conditionOk(p,quoteCondition('SSD'))&&isSsdCompatibleWithBoard(p,board));
+      const ssds=filterByCondition(products.filter(p=>p.category==='SSD'&&isSsdCompatibleWithBoard(p,board)),'SSD');
       fillSelect(ssdSel,ssds,board?'Select compatible SSD':'Skip SSD');
-      if(ssds.some(p=>p.id===current))ssdSel.value=current;
-      else ssdSel.value='';
+      if(ssds.some(p=>p.id===current))ssdSel.value=current; else ssdSel.value='';
     }
     function filterMonitorSelect(){
       if(!monitorSel)return;
+      const size=monitorSizeValue(monitorSize?.value||'');
       const current=monitorSel.value;
-      const selectedSize=clean(monitorSize?.value);
-      let monitors=products.filter(p=>p.category==='MONITOR'&&conditionOk(p,quoteCondition('MONITOR')));
-      if(selectedSize)monitors=monitors.filter(p=>String(p.monitorSize)===String(selectedSize));
-      const label=selectedSize?`Select ${selectedSize} inch monitor`:'Skip Monitor';
-      fillSelect(monitorSel,monitors,label);
-      if(monitors.some(p=>p.id===current))monitorSel.value=current;
-      else monitorSel.value='';
-      renderQuote();
+      const mons=filterByCondition(products.filter(p=>p.category==='MONITOR' && (!size || String(p.monitorSize)===String(size))),'MONITOR');
+      fillSelect(monitorSel,mons,size?`Select ${size} inch monitor`:'Skip Monitor');
+      if(mons.some(p=>p.id===current))monitorSel.value=current; else monitorSel.value='';
     }
-    function onProcessorChange(){
-      const cpu=byId(products,processor.value);
-      if(!cpu){
-        if(mobo){mobo.innerHTML='<option value="">Select processor first</option>';mobo.disabled=true;}
-        if(ram){ram.innerHTML='<option value="">Select processor first</option>';ram.disabled=true;}
-        filterRamSlotSelect();filterSsdSelect();renderQuote();return;
-      }
-      const cpuGens=(cpu.generations&&cpu.generations.length?cpu.generations:parseGenerations(cpu.generation));
-      const compatibleIds=(clean(cpu.compatibleMotherboardIds||'').split(/[|,;]+/).map(clean).filter(Boolean));
-      const boards=products.filter(p=>{
-        if(p.category!=='MOTHERBOARD'||!conditionOk(p,quoteCondition('MOTHERBOARD')))return false;
-        if(compatibleIds.length)return compatibleIds.includes(p.id);
-        return cpuGens.some(g=>boardSupportsGen(p,g));
-      });
-      fillSelect(mobo,boards,'Select compatible motherboard');
-      filterRamSlotSelect();filterRamSelect();filterSsdSelect();renderQuote();
-    }
-
-    fillProcessors();
-    fillGeneralSelects();
-    onProcessorChange();
-    filterMonitorSelect();
-
-    processor.addEventListener('change',onProcessorChange);
-    mobo?.addEventListener('change',()=>{filterRamSlotSelect();filterRamSelect();filterSsdSelect();renderQuote();});
-    ram?.addEventListener('change',renderQuote);
-    ramSlot?.addEventListener('change',renderQuote);
-    ssdSel?.addEventListener('change',renderQuote);
-    monitorSize?.addEventListener('change',filterMonitorSelect);
-    monitorSel?.addEventListener('change',renderQuote);
-    $all('[data-condition-for]').forEach(sel=>sel.addEventListener('change',()=>{
-      const cat=sel.getAttribute('data-condition-for');
-      if(cat==='PROCESSOR'){fillProcessors();onProcessorChange();}
-      else if(cat==='MOTHERBOARD'){onProcessorChange();}
-      else if(cat==='RAM'){filterRamSelect();renderQuote();}
-      else if(cat==='SSD'){filterSsdSelect();renderQuote();}
-      else if(cat==='MONITOR'){filterMonitorSelect();}
-      else {fillCategorySelect(cat);renderQuote();}
-    }));
+    refreshBasicSelects();
+    $all('[data-condition-for]').forEach(sel=>sel.addEventListener('change',()=>{refreshBasicSelects();filterMotherboardAndRam();renderQuote();}));
+    processor.addEventListener('change',filterMotherboardAndRam);
+    mobo?.addEventListener('change',()=>{filterRamSelect();filterSsdSelect();renderQuote();});
+    monitorSize?.addEventListener('change',()=>{filterMonitorSelect();renderQuote();});
+    [ram,ssdSel,ramSlot,monitorSel,'#quoteRamQty','#quoteSsdQty','#quoteHardDiskQty'].forEach(x=>{
+      const el=typeof x==='string'?$(x):x;if(el)el.addEventListener('change',renderQuote);
+      if(el&&el.tagName==='INPUT')el.addEventListener('input',renderQuote);
+    });
     $all('[data-quote-select]').forEach(sel=>sel.addEventListener('change',renderQuote));
-    $all('.quote-qty-input').forEach(inp=>inp.addEventListener('input',renderQuote));
-    $all('[data-cable-option]').forEach(inp=>inp.addEventListener('change',renderQuote));
+    $all('[data-cable-option],[data-cable-qty]').forEach(el=>['change','input'].forEach(ev=>el.addEventListener(ev,renderQuote)));
     $('#addQuoteToCartBtn')?.addEventListener('click',()=>{const ids=getQuoteIds();if(!ids.length){toast('Select products first');return}addManyToCart(ids)});
     $('#downloadQuotePdfBtn')?.addEventListener('click',downloadQuotationPdf);
     renderQuote();
   }
 
-  function getQtyForProduct(p){
-    if(!p)return 1;
-    if(p.id===$('#quoteRam')?.value)return Math.max(1,Number($('#quoteRamQty')?.value||1));
-    if(p.id===$('#quoteSsd')?.value)return Math.max(1,Number($('#quoteSsdQty')?.value||1));
-    if(p.id===$('#quoteHardDisk')?.value)return Math.max(1,Number($('#quoteHardDiskQty')?.value||1));
-    return 1;
-  }
   function getQuoteIds(){
     const ids=[];['#quoteProcessor','#quoteMotherboard','#quoteRam'].forEach(s=>{const v=$(s)?.value;if(v)ids.push(v)});
     $all('[data-quote-select]').forEach(s=>{if(s.value)ids.push(s.value)});
     return [...new Set(ids)];
   }
-  function getQuoteItems(){
-    const items=getQuoteIds().map(id=>byId(quoteProducts,id)).filter(Boolean).map(p=>({product:p,qty:getQtyForProduct(p),condition:p.condition,extra:0}));
-    if($('#quoteMotherboard')?.value && $('#quoteRamSlot')?.value==='4')items.push({product:{id:'RAM-SLOT-4-EXTRA',name:'Motherboard RAM Slot 4 Option',category:'MOTHERBOARD',price:500,condition:'OPTION'},qty:1,condition:'OPTION',extra:1});
-    $all('[data-cable-option]').forEach(ch=>{
-      if(!ch.checked)return;
-      const label=ch.getAttribute('data-cable-option');
-      const qty=Math.max(1,Number(document.querySelector(`[data-cable-qty="${label}"]`)?.value||1));
-      items.push({product:{id:`CABLE-${label}`,name:label,category:'CABLES',price:0,condition:'ADD-ON'},qty,condition:'ADD-ON',extra:1});
+  function cableProducts(){
+    const out=[];
+    $all('[data-cable-option]').forEach(cb=>{
+      if(!cb.checked)return;
+      const name=cb.getAttribute('data-cable-option');
+      const qty=Math.max(1,Number($(`[data-cable-qty="${name}"]`)?.value||1));
+      const p=quoteProducts.find(x=>x.category==='CABLES'&&upper(x.name).includes(upper(name.replace(' CABLE','')))) || {id:'CABLE-'+name,name,category:'CABLES',condition:'BRAND NEW',price:0,description:'Cable add-on'};
+      out.push({product:p,qty});
     });
-    return items;
+    return out;
   }
+  function getQuoteRows(){
+    const ids=getQuoteIds();
+    const rows=ids.map(id=>byId(quoteProducts,id)).filter(Boolean).map(p=>({product:p,qty:itemQtyFor(p)}));
+    const boardRow=rows.find(x=>x.product.category==='MOTHERBOARD');
+    if(boardRow && $('#quoteRamSlot')?.value==='4')boardRow.slotExtra=500;
+    return rows.concat(cableProducts());
+  }
+  function getQuoteItems(){return getQuoteRows().map(x=>x.product).filter(Boolean)}
   function renderQuote(){
     const tbody=$('#quoteTable tbody');if(!tbody)return;
-    const rows=getQuoteItems();const total=rows.reduce((s,it)=>s+(toNumber(it.product.price)*it.qty),0);
-    tbody.innerHTML=rows.length?rows.map(it=>`<tr><td>${esc(it.product.name)}<br><span class="muted">${esc(it.product.category)} ${it.product.memory?`• ${esc(it.product.memory)}`:''}${it.product.monitorSize?` • ${esc(it.product.monitorSize)} inch`:''}</span></td><td>${esc(it.qty)}</td><td>${esc(it.condition||it.product.condition||'')}</td><td>${money(toNumber(it.product.price)*it.qty)}</td></tr>`).join(''):'<tr><td colspan="4" class="muted">No items selected yet.</td></tr>';
+    const rows=getQuoteRows();const total=rows.reduce((s,x)=>s+(toNumber(x.product.price)*x.qty)+(x.slotExtra||0),0);
+    tbody.innerHTML=rows.length?rows.map(x=>{const p=x.product;const line=toNumber(p.price)*x.qty+(x.slotExtra||0);return `<tr><td>${esc(p.name)}${x.slotExtra?`<br><span class="muted">RAM Slot 4 extra charge included</span>`:''}<br><span class="muted">${esc(p.category)} ${p.memory?`• ${esc(p.memory)}`:''}${p.monitorSize?` • ${esc(p.monitorSize)} inch`:''}</span></td><td>${x.qty}</td><td>${esc(p.condition||'')}</td><td>${money(line)}</td></tr>`}).join(''):'<tr><td colspan="4" class="muted">No items selected yet.</td></tr>';
     $('#quoteTotal')&&( $('#quoteTotal').textContent=money(total) );
   }
+
   function quoteCustomer(){
     return {
       name:clean($('#quoteCustomerName')?.value), phone:clean($('#quoteCustomerPhone')?.value), email:clean($('#quoteCustomerEmail')?.value), address:clean($('#quoteCustomerAddress')?.value)
@@ -1191,9 +1154,10 @@ Please confirm availability and final price.`;
   }
   async function downloadQuotationPdf(){
     const customer=validateQuoteCustomer();if(!customer)return;
-    const items=getQuoteItems();if(!items.length){toast('Select products first');return}
+    const rows=getQuoteRows();if(!rows.length){toast('Select products first');return}
+    const items=rows.map(x=>x.product);
     const jsPDF=window.jspdf&&window.jspdf.jsPDF;if(!jsPDF){window.print();return}
-    const doc=new jsPDF({unit:'pt',format:'a4'});const qn=quoteNo();const total=items.reduce((s,p)=>s+p.price,0);
+    const doc=new jsPDF({unit:'pt',format:'a4'});const qn=quoteNo();const total=rows.reduce((s,x)=>s+(toNumber(x.product.price)*x.qty)+(x.slotExtra||0),0);
     drawHeader(doc,'ONLINE QUOTATION',`Quote No: ${qn}`);
     let y=132;
     doc.setFillColor(247,251,255);doc.roundedRect(40,y,515,84,12,12,'F');
@@ -1208,11 +1172,12 @@ Please confirm availability and final price.`;
     pdfText(doc,'#',55,y+18);pdfText(doc,'ITEM',82,y+18);pdfText(doc,'CONDITION',355,y+18);pdfText(doc,'PRICE',462,y+18);
     y+=28;
     doc.setFont('helvetica','normal');doc.setTextColor(25,34,54);doc.setFontSize(9);
-    items.forEach((p,i)=>{
+    rows.forEach((x,i)=>{
+      const p=x.product; const lineTotal=toNumber(p.price)*x.qty+(x.slotExtra||0);
       if(y>690){docFooter(doc);doc.addPage();drawHeader(doc,'ONLINE QUOTATION',`Quote No: ${qn}`);y=132;}
       doc.setFillColor(i%2?255:245,i%2?255:248,i%2?255:253);doc.rect(40,y,515,38,'F');
-      pdfText(doc,String(i+1),55,y+23);pdfText(doc,p.name,82,y+16);doc.setTextColor(95,110,130);pdfText(doc,`${p.category} ${p.memory?`• ${p.memory}`:''}`,82,y+30);doc.setTextColor(25,34,54);
-      pdfText(doc,p.condition,355,y+23);pdfText(doc,money(p.price),462,y+23);
+      pdfText(doc,String(i+1),55,y+23);pdfText(doc,p.name,82,y+16);doc.setTextColor(95,110,130);pdfText(doc,`${p.category} • Qty ${x.qty}${p.memory?` • ${p.memory}`:''}${x.slotExtra?' • RAM Slot 4 extra included':''}`,82,y+30);doc.setTextColor(25,34,54);
+      pdfText(doc,p.condition,355,y+23);pdfText(doc,money(lineTotal),462,y+23);
       y+=38;
     });
     doc.setFillColor(5,10,28);doc.roundedRect(330,y+14,225,44,10,10,'F');
