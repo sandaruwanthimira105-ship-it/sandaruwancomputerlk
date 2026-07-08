@@ -45,8 +45,34 @@
   function genNum(v){const s=upper(v);const m=s.match(/14|13|12|11|10|[2-9]/);return m?m[0]:''}
   function genLabel(g){const n=Number(g);if(!n)return '';if(n===2)return '2ND GEN';if(n===3)return '3RD GEN';return `${n}TH GEN`}
   function normalizeMonitorSize(v){const m=clean(v).match(/19|20|22|24|27|29|32/);return m?m[0]:''}
+  function normalizePanelType(v){const s=upper(v);if(s.includes('IPS'))return 'IPS';if(s.includes('VA'))return 'VA';if(s.includes('TN'))return 'TN';return ''}
   function normalizeRamSupport(v){const s=upper(v).replace(/\s+/g,'');if(s.includes('DDR5'))return 'DDR5';if(s.includes('DDR4'))return 'DDR4';if(s.includes('DDR3'))return 'DDR3';return ''}
-  function normalizeRamSlot(v){const s=upper(v);if(s.includes('4'))return '4';if(s.includes('2'))return '2';return ''}
+  function normalizeRamSlot(v){const slots=parseRamSlots(v);return slots[0]||''}
+  function parseRamSlots(...values){
+    const out=[];
+    values.forEach(v=>{
+      const s=upper(v).replace(/[^A-Z0-9]/g,' ');
+      if(!s.trim())return;
+      if(/2/.test(s)||s.includes('2RAM')||s.includes('2 SLOT')||s.includes('2SLOT'))out.push('2');
+      if(/4/.test(s)||s.includes('4RAM')||s.includes('4 SLOT')||s.includes('4SLOT'))out.push('4');
+    });
+    return out.filter((v,i,a)=>a.indexOf(v)===i).sort((a,b)=>Number(a)-Number(b));
+  }
+  function ramSlotsLabel(p){
+    const slots=p.ramSlots||[];
+    return slots.length?slots.map(s=>`${s} RAM SLOT`).join(' / '):'';
+  }
+  function motherboardQuoteName(p,slot){
+    const s=slot||'2';
+    let base=clean(p.name).replace(/RAM\s*SLOT\s*[24]/gi,'').replace(/[24]\s*RAM\s*SLOT/gi,'').replace(/\s+/g,' ').trim();
+    if(/MOTHER\s*BOARD|MOTHERBOARD|BORD|BOARD/i.test(base)){
+      base=base.replace(/MOTHER\s*BOARD|MOTHERBOARD|BORD|BOARD/i,`${s} RAM SLOT Motherboard`);
+    }else{
+      base=`${base} ${s} RAM SLOT Motherboard`;
+    }
+    return base.replace(/\s+/g,' ').trim();
+  }
+  function motherboardSlotPrice(p,slot){return toNumber(p.price)+(String(slot)==='4'?500:0)}
   function normalizeCapacity(v){const m=upper(v).match(/\d+\s*(GB|TB)/);return m?m[0].replace(/\s+/g,''):clean(v)}
   function normalizeWatt(v){const m=upper(v).match(/\d{3,4}/);return m?m[0]:''}
   function normalizeRgb(v){const s=upper(v).replace(/\s+/g,' ');if(s.includes('NON'))return 'NON RGB';if(s.includes('RGB'))return 'RGB';return ''}
@@ -115,6 +141,12 @@
     const capacity=normalizeCapacity(getField(row,['CAPACITY','CAPACITY / MEMORY','MEMORY','VGA MEMORY','capacity','memorySize']));
     const watt=normalizeWatt(getField(row,['WATT','WAT','WATTS','watt','psu watt']));
     const monitorSize=normalizeMonitorSize(getField(row,['MONITOR SIZE','SIZE','monitorSize']));
+    const ramSlots=parseRamSlots(
+      getField(row,['RAM SLOT OPTION 1','RAM SLOT 1','RAMSLOT OPTION 1','RAM SLOT OPTION ONE']),
+      getField(row,['RAM SLOT OPTION 2','RAM SLOT 2','RAMSLOT OPTION 2','RAM SLOT OPTION TWO']),
+      getField(row,['RAM SLOT','RAM SLOTS','ramSlot','ramSlots'])
+    );
+    const panelType=normalizePanelType(getField(row,['PANEL TYPE','PANEL','panelType','panel']));
     return {
       id:clean(getField(row,['PRODUCT ID','ID','id']))||`ITEM-${i+1}`,
       name:clean(getField(row,['PRODUCT NAME','NAME','name']))||'Product',
@@ -127,10 +159,12 @@
       mbGen1,mbGen2,mbGens,
       processorGen,
       ramSupport,
-      ramSlot:normalizeRamSlot(getField(row,['RAM SLOT','RAM SLOTS','ramSlot','ramSlots'])),
+      ramSlot:ramSlots.join('/'),
+      ramSlots,
       ssdSupport,
       ssdType,
       monitorSize,
+      panelType,
       capacity,
       speed:clean(getField(row,['SPEED','speed'])),
       watt,
@@ -149,6 +183,7 @@
   function toast(msg){const t=$('#toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),2200)}
   function addToCart(id,qty=1){const cart=getCart();const found=cart.find(x=>x.id===id&&!x.custom);if(found)found.qty+=Number(qty||1);else cart.push({id,qty:Number(qty||1)});saveCart(cart);toast('Added to cart')}
   function addQuoteLinesToCart(lines){const cart=getCart();cart.push({id:'QUOTE-'+Date.now(),qty:1,custom:{name:'Custom PC Quotation',price:lines.reduce((s,l)=>s+l.price*l.qty,0),category:'QUOTE',condition:'',lines}});saveCart(cart);toast('Quotation added to cart')}
+  function addCustomProductToCart(item,qty=1){const cart=getCart();cart.push({id:'CUSTOM-'+Date.now()+'-'+Math.floor(Math.random()*9999),qty:Number(qty||1),custom:{name:item.name,price:toNumber(item.price),category:item.category||'CUSTOM',condition:item.condition||'',image:item.image||'assets/img/logo.jpg'}});saveCart(cart);toast('Added to cart')}
   function removeFromCart(id){saveCart(getCart().filter(it=>it.id!==id));initCartPage()}
   function setQty(id,qty){saveCart(getCart().map(it=>it.id===id?{...it,qty:Math.max(1,Number(qty||1))}:it));initCartPage()}
   function byId(products,id){return products.find(p=>p.id===id)}
@@ -176,7 +211,7 @@
   function unique(arr){return Array.from(new Set(arr.map(clean).filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b),undefined,{numeric:true}))}
 
   function productCard(p){
-    const details=[p.condition,p.brand,p.model,p.ramSupport,p.capacity,p.monitorSize?`${p.monitorSize} Wide`:'' ,p.watt?`${p.watt}W`:'' ].filter(Boolean).join(' • ');
+    const details=[p.condition,p.brand,p.model,p.ramSupport,p.capacity,p.monitorSize?`${p.monitorSize} Wide`:'',p.panelType,p.watt?`${p.watt}W`:'' ].filter(Boolean).join(' • ');
     return `<article class="product-card" data-product-id="${esc(p.id)}" tabindex="0">
       <div class="product-img"><img src="${esc(productImage(p))}" alt="${esc(p.name)}" onerror="this.src='assets/img/logo.jpg'"></div>
       <div class="product-body"><div class="product-tags"><span class="tag ${p.condition==='BRAND NEW'?'new':'used'}">${esc(p.condition)}</span><span class="tag">${esc(p.category)}</span></div>
@@ -186,27 +221,52 @@
   function ensureProductModal(){
     if($('#productModal'))return;
     document.body.insertAdjacentHTML('beforeend',`<div class="product-modal" id="productModal" aria-hidden="true"><div class="product-modal-backdrop" data-close-modal></div><div class="product-modal-card"><button class="modal-close" data-close-modal>×</button><div id="productModalContent"></div></div></div>`);
+    const modal=$('#productModal');
     document.addEventListener('click',e=>{if(e.target.closest('[data-close-modal]'))closeProductModal()});
+    modal.addEventListener('change',e=>{if(e.target.id==='modalRamSlotOption')updateProductModalPrice()});
+    modal.addEventListener('click',e=>{
+      const add=e.target.closest('[data-modal-add-product]');
+      if(!add)return;
+      const id=add.getAttribute('data-modal-add-product');
+      const p=(productsCache||[]).find(x=>x.id===id);if(!p)return;
+      const qty=Math.max(1,Number($('#modalProductQty')?.value||1));
+      if(p.category==='MOTHERBOARD'&&(p.ramSlots||[]).length){
+        const slot=$('#modalRamSlotOption')?.value||((p.ramSlots||[])[0]||'2');
+        addCustomProductToCart({name:motherboardQuoteName(p,slot),price:motherboardSlotPrice(p,slot),category:p.category,condition:p.condition,image:productImage(p)},qty);
+      }else addToCart(p.id,qty);
+      closeProductModal();
+    });
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeProductModal()});
+  }
+  function updateProductModalPrice(){
+    const modal=$('#productModal');if(!modal)return;const p=(productsCache||[]).find(x=>x.id===modal.dataset.productId);if(!p)return;
+    const slot=$('#modalRamSlotOption')?.value||((p.ramSlots||[])[0]||'2');
+    const price=p.category==='MOTHERBOARD'?(motherboardSlotPrice(p,slot)):p.price;
+    const priceEl=$('#modalProductPrice');if(priceEl)priceEl.textContent=money(price);
   }
   function closeProductModal(){const m=$('#productModal');if(m){m.classList.remove('open');m.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open')}}
   function warrantyText(p){if(p.warrantyMonths)return `${esc(p.warrantyMonths)} month warranty`;return p.condition==='BRAND NEW'?'Brand/shop warranty as available':'Shop checking warranty as available'}
   function openProductModal(id,products){
     const p=byId(products,id);if(!p)return;ensureProductModal();
+    const slots=p.category==='MOTHERBOARD'?(p.ramSlots||[]):[];
+    const defaultSlot=slots.includes('2')?'2':(slots[0]||'');
+    const slotSelector=slots.length?`<div class="product-modal-order"><label>RAM Slot Option</label><select class="input" id="modalRamSlotOption">${slots.map(s=>`<option value="${s}" ${s===defaultSlot?'selected':''}>${s} RAM SLOT${s==='4'?' (+Rs. 500)':''}</option>`).join('')}</select></div>`:'';
+    $('#productModal').dataset.productId=p.id;
     $('#productModalContent').innerHTML=`<div class="product-modal-grid"><div class="product-modal-image"><img src="${esc(productImage(p))}" onerror="this.src='assets/img/logo.jpg'" alt="${esc(p.name)}"></div><div class="product-modal-info">
-      <div class="modal-tag-row"><span class="tag ${p.condition==='BRAND NEW'?'new':'used'}">${esc(p.condition)}</span><span class="tag">${esc(p.category)}</span></div><h2>${esc(p.name)}</h2><div class="product-modal-price">${money(p.price)}</div>
+      <div class="modal-tag-row"><span class="tag ${p.condition==='BRAND NEW'?'new':'used'}">${esc(p.condition)}</span><span class="tag">${esc(p.category)}</span></div><h2>${esc(p.name)}</h2><div class="product-modal-price" id="modalProductPrice">${money(slots.length?motherboardSlotPrice(p,defaultSlot):p.price)}</div>
       <p class="product-modal-description">${esc(p.description||'Quality computer product from Sandaruwan Computer. Please confirm availability before payment.')}</p>
       <div class="product-detail-list">
         <div><span>Brand</span><b>${esc(p.brand||'-')}</b></div><div><span>Model / Type</span><b>${esc(p.model||'-')}</b></div><div><span>Warranty Period</span><b>${warrantyText(p)}</b></div>
         ${p.mbGens?.length?`<div><span>Board GEN Support</span><b>${esc(p.mbGens.map(genLabel).join(' / '))}</b></div>`:''}
         ${p.processorGen?`<div><span>Processor GEN</span><b>${esc(genLabel(p.processorGen))}</b></div>`:''}
         ${p.ramSupport?`<div><span>RAM Support</span><b>${esc(p.ramSupport)}</b></div>`:''}
-        ${p.ramSlot?`<div><span>RAM Slots</span><b>${esc(p.ramSlot)} Slot</b></div>`:''}
+        ${ramSlotsLabel(p)?`<div><span>RAM Slot Options</span><b>${esc(ramSlotsLabel(p))}</b></div>`:''}
         ${p.ssdSupport?`<div><span>SSD Support</span><b>${esc(p.ssdSupport)}</b></div>`:''}
         ${p.capacity?`<div><span>Capacity / Memory</span><b>${esc(p.capacity)}</b></div>`:''}
         ${p.watt?`<div><span>Watt</span><b>${esc(p.watt)}W</b></div>`:''}
         ${p.monitorSize?`<div><span>Monitor Size</span><b>${esc(p.monitorSize)} Wide</b></div>`:''}
-      </div><div class="product-modal-order"><label>Quantity</label><div class="modal-qty-row"><input class="input" id="modalProductQty" type="number" min="1" value="1"><button class="btn btn-primary" data-add-to-cart="${esc(p.id)}">Add to Cart</button></div></div>
+        ${p.panelType?`<div><span>Panel Type</span><b>${esc(p.panelType)}</b></div>`:''}
+      </div>${slotSelector}<div class="product-modal-order"><label>Quantity</label><div class="modal-qty-row"><input class="input" id="modalProductQty" type="number" min="1" value="1"><button class="btn btn-primary" data-modal-add-product="${esc(p.id)}">Add to Cart</button></div></div>
     </div></div>`;
     const modal=$('#productModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
   }
@@ -220,7 +280,7 @@
     function setOptions(id,values,placeholder){const sel=$(id);if(!sel)return;const cur=sel.value;sel.innerHTML=`<option value="">${placeholder}</option>`+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if(values.includes(cur))sel.value=cur}
     function visibleFilters(){
       const c=selectedCat;const map={
-        'MOTHERBOARD':['generation','ramSupport','ramSlot','brand','storage'],
+        'MOTHERBOARD':['generation','ramSupport','brand','storage'],
         'PROCESSOR':['processorGen','model','brand'],
         'CPU COOLER':['socketGen','brand'],
         'RAM':['capacity','speed','brand','ramSupport'],
@@ -228,7 +288,7 @@
         'SSD':['capacity','brand','ssdType'],
         'VGA CARD':['capacity','model','brand'],
         'POWER SUPPLY':['watt','brand'],
-        'MONITOR':['monitorSize','brand'],
+        'MONITOR':['monitorSize','panelType','brand'],
         'CASING':['brand'],
         'KEYBOARD':['rgb','brand'], 'MOUSE':['rgb','brand'], 'SPEAKER':['rgb','brand'], 'HEADSET':['rgb','brand'], 'MOUSE PAD':['brand'], 'RGB CASING FAN':['brand'], 'CABLES':['brand'], 'OTHER':['brand']
       };
@@ -243,10 +303,10 @@
       setOptions('#processorGenFilter',unique(scoped.map(p=>p.processorGen).filter(Boolean).map(genLabel)),'Processor Gen');
       setOptions('#generationFilter',unique(scoped.flatMap(p=>p.mbGens||[]).map(genLabel)),'Board Gen');
       setOptions('#ramSupportFilter',unique(scoped.map(p=>p.ramSupport)),'RAM Support');
-      setOptions('#ramSlotFilter',unique(scoped.map(p=>p.ramSlot).filter(Boolean).map(x=>`${x} Slot`)),'RAM Slot');
       setOptions('#storageFilter',unique(scoped.map(p=>p.ssdSupport||p.ssdType)),'SSD / Storage');
       setOptions('#ssdTypeFilter',unique(scoped.map(p=>p.ssdType)),'SSD Type');
       setOptions('#monitorSizeFilter',unique(scoped.map(p=>p.monitorSize).filter(Boolean).map(x=>`${x} WIDE`)),'Monitor Size');
+      setOptions('#panelTypeFilter',unique(scoped.map(p=>p.panelType).filter(Boolean)),'Panel Type');
       setOptions('#capacityFilter',unique(scoped.map(p=>p.capacity)),'Capacity / Memory');
       setOptions('#speedFilter',unique(scoped.map(p=>p.speed)),'Speed');
       setOptions('#wattFilter',unique(scoped.map(p=>p.watt).filter(Boolean).map(x=>`${x}W`)),'Watt');
@@ -262,10 +322,10 @@
       const pg=$('#processorGenFilter')?.value;if(pg&&genLabel(p.processorGen)!==pg)return false;
       const bg=$('#generationFilter')?.value;if(bg&&!(p.mbGens||[]).map(genLabel).includes(bg))return false;
       const rs=$('#ramSupportFilter')?.value;if(rs&&p.ramSupport!==rs)return false;
-      const slot=$('#ramSlotFilter')?.value;if(slot&&`${p.ramSlot} Slot`!==slot)return false;
       const st=$('#storageFilter')?.value;if(st&&(p.ssdSupport!==st&&p.ssdType!==st))return false;
       const ssdT=$('#ssdTypeFilter')?.value;if(ssdT&&p.ssdType!==ssdT)return false;
       const size=$('#monitorSizeFilter')?.value;if(size&&`${p.monitorSize} WIDE`!==size)return false;
+      const panel=$('#panelTypeFilter')?.value;if(panel&&p.panelType!==panel)return false;
       const cap=$('#capacityFilter')?.value;if(cap&&p.capacity!==cap)return false;
       const speed=$('#speedFilter')?.value;if(speed&&p.speed!==speed)return false;
       const watt=$('#wattFilter')?.value;if(watt&&`${p.watt}W`!==watt)return false;
@@ -333,9 +393,9 @@
       const slotSel=$('#quoteRamSlot');
       if(slotSel){
         const currentSlot=slotSel.value;
-        const slots=[];if(board?.ramSlot==='2')slots.push('2');if(board?.ramSlot==='4')slots.push('2','4');
-        slotSel.innerHTML=slots.length?slots.map(s=>`<option value="${s}">RAM Slot ${s}${s==='4'?' (+Rs. 500)':''}</option>`).join(''):'<option value="">Select motherboard first</option>';
-        if(slots.includes(currentSlot))slotSel.value=currentSlot;
+        const slots=board?(board.ramSlots&&board.ramSlots.length?board.ramSlots:['2']):[];
+        slotSel.innerHTML=slots.length?slots.map(s=>`<option value="${s}">${s} RAM SLOT${s==='4'?' (+Rs. 500)':''}</option>`).join(''):'<option value="">Select motherboard first</option>';
+        if(slots.includes(currentSlot))slotSel.value=currentSlot;else if(slots.includes('2'))slotSel.value='2';else if(slots.length)slotSel.value=slots[0];
         slotSel.disabled=!slots.length;
       }
       const ramCapacity=$('#quoteRamCapacity')?.value;
@@ -370,7 +430,7 @@
     const lines=[];
     const simple=['#quoteCasing','#quoteProcessor','#quoteCpuCooler','#quotePsu','#quoteVga','#quoteMonitor','#quoteKeyboard','#quoteMouse','#quoteMousePad','#quoteSpeaker','#quoteHeadset'];
     simple.forEach(id=>{const p=selectedLine(id,null);if(p)lines.push(p)});
-    const board=selectedLine('#quoteMotherboard',null,$('#quoteRamSlot')?.value==='4'?500:0,$('#quoteRamSlot')?.value==='4'?' - RAM Slot 4':'');if(board)lines.push(board);
+    const boardProduct=byId(quoteProducts,$('#quoteMotherboard')?.value);if(boardProduct){const slot=$('#quoteRamSlot')?.value||((boardProduct.ramSlots||[])[0]||'2');lines.push({...boardProduct,name:motherboardQuoteName(boardProduct,slot),price:motherboardSlotPrice(boardProduct,slot),qty:1});}
     [['#quoteRam','#quoteRamQty'],['#quoteHdd','#quoteHddQty'],['#quoteSsd','#quoteSsdQty'],['#quoteRgbFan','#quoteRgbFanQty']].forEach(([s,q])=>{const p=selectedLine(s,q);if(p)lines.push(p)});
     ['POWER CABLE','VGA CABLE','HDMI CABLE','DVI CABLE'].forEach(c=>{const l=cableLine(c);if(l)lines.push(l)});
     return lines;
@@ -407,7 +467,7 @@
 
   async function cartItems(){
     const products=await loadProducts();return getCart().map(it=>{
-      if(it.custom)return {product:{id:it.id,name:it.custom.name,category:it.custom.category||'QUOTE',condition:'',price:it.custom.price,image:'assets/img/logo.jpg'},qty:Number(it.qty||1),custom:it.custom};
+      if(it.custom)return {product:{id:it.id,name:it.custom.name,category:it.custom.category||'QUOTE',condition:it.custom.condition||'',price:it.custom.price,image:it.custom.image||'assets/img/logo.jpg'},qty:Number(it.qty||1),custom:it.custom};
       return {product:byId(products,it.id),qty:Number(it.qty||1)};
     }).filter(x=>x.product);
   }
