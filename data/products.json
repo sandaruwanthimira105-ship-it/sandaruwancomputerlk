@@ -1,1 +1,35 @@
-[]
+[
+  {
+    "id": "MOTH--570",
+    "name": "H81 MOTHERBORD",
+    "category": "MOTHERBOARD",
+    "condition": "USED",
+    "price": 5200,
+    "stock": "",
+    "image": "assets/img/products/h81-motherbord.jpg",
+    "description": "",
+    "warrantyMonths": "",
+    "generation": "4",
+    "compatibleGenerations": [
+      "4"
+    ],
+    "memory": "DDR3",
+    "compatibleRam": [
+      "DDR3"
+    ],
+    "chipset": "",
+    "socket": "",
+    "ramSlots": [
+      "2"
+    ],
+    "storageType": "",
+    "storageSupport": [
+      "SATA SSD"
+    ],
+    "sataSupport": true,
+    "m2SataSupport": false,
+    "nvmeSupport": false,
+    "m2Slots": "",
+    "compatibleMotherboardIds": []
+  }
+]
