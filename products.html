@@ -88,6 +88,84 @@
   .product-main .products-grid{grid-template-columns:1fr 1fr!important;gap:8px!important}
   .product-main .product-img-wrap{height:96px!important;min-height:96px!important;max-height:96px!important}
 }
+
+
+/* V34 product filters alignment fix */
+.product-filters-panel{
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr))!important;
+  gap:10px!important;
+  align-items:center!important;
+  margin:0 0 20px!important;
+  padding:14px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:22px!important;
+  background:rgba(8,18,38,.62)!important;
+  box-shadow:0 18px 45px rgba(0,0,0,.18)!important;
+}
+.product-filters-panel .product-filter-bar,
+.product-filters-panel .filter-pill-row{
+  display:contents!important;
+  margin:0!important;
+  gap:0!important;
+}
+.product-filters-panel .input,
+.product-filters-panel select,
+.product-filters-panel .product-filter{
+  width:100%!important;
+  min-width:0!important;
+  height:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+.product-filters-panel #productSearch{
+  grid-column:span 2!important;
+}
+.product-filters-panel [data-filter-box]{
+  min-width:0!important;
+  width:100%!important;
+  margin:0!important;
+  flex:none!important;
+}
+.product-filters-panel [data-filter-box][style*="display: none"]{
+  display:none!important;
+}
+.product-result-head{
+  margin-top:4px!important;
+}
+@media(max-width:980px){
+  .product-filters-panel{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:9px!important;
+    padding:12px!important;
+  }
+  .product-filters-panel #productSearch{grid-column:span 3!important;}
+}
+@media(max-width:620px){
+  .product-filters-panel{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    padding:10px!important;
+    border-radius:18px!important;
+  }
+  .product-filters-panel #productSearch{grid-column:span 2!important;}
+  .product-filters-panel .input,
+  .product-filters-panel select,
+  .product-filters-panel .product-filter{
+    height:42px!important;
+    min-height:42px!important;
+    font-size:12px!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+  }
+}
+@media(max-width:380px){
+  .product-filters-panel{grid-template-columns:1fr!important;}
+  .product-filters-panel #productSearch{grid-column:span 1!important;}
+}
+
 </style></head>
 <body data-page="products">
   <header class="navbar"><div class="container nav-wrap"><a class="brand" href="index.html"><img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo"><div class="brand-title">Sandaruwan Computer<span>Products Store</span></div></a><button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button><nav class="nav-links" id="navLinks"><a href="index.html">Home</a><a href="quotation.html">Online Quotation</a><a href="products.html" class="active">Products</a><a href="prebuild.html">Pre Build PCs</a><a href="about.html">About Us</a><a href="cart.html" class="cart-pill">Cart <span class="cart-count" data-cart-count>0</span></a><a href="checkout.html">Checkout</a></nav></div></header>
@@ -96,6 +174,7 @@
     <section class="section"><div class="container products-shell">
       <aside class="category-sidebar"><h3>Categories</h3><div class="category-list" id="categoryList"></div></aside>
       <div class="product-main">
+        <div class="product-filters-panel">
         <div class="product-filter-bar"><input class="input" id="productSearch" type="search" placeholder="Search product name, brand, model..."><select class="product-filter" id="conditionFilter"><option value="">Used / Brand New</option><option value="USED">Used</option><option value="BRAND NEW">Brand New</option></select><select class="product-filter" id="brandFilter"><option value="">Brand</option></select><select class="product-filter" id="modelFilter"><option value="">Model / Type</option></select><select class="product-filter" id="processorGenFilter"><option value="">Processor Gen</option></select></div>
         <div class="filter-pill-row">
           <div data-filter-box="generation"><select class="product-filter" id="generationFilter"><option value="">Board Gen</option></select></div>
@@ -110,10 +189,11 @@
           <div data-filter-box="rgb"><select class="product-filter" id="rgbFilter"><option value="">RGB / Non RGB</option></select></div>
           <div data-filter-box="socketGen"><select class="product-filter" id="socketGenFilter"><option value="">Socket / Gen</option></select></div>
         </div>
+        </div>
         <div class="product-result-head"><h2>Available Products</h2><span class="muted" id="productCount">Loading...</span></div>
         <div class="product-grid products-grid" id="productsGrid"><div class="loading-state">Loading products...</div></div>
       </div>
     </div></section>
   </main>
-  <footer class="footer"><div class="container">© Sandaruwan Computer • Products</div></footer><div class="toast" id="toast"></div><script src="assets/js/config.js?v=33"></script><script src="assets/js/app.js?v=33"></script>
+  <footer class="footer"><div class="container">© Sandaruwan Computer • Products</div></footer><div class="toast" id="toast"></div><script src="assets/js/config.js?v=34"></script><script src="assets/js/app.js?v=34"></script>
 </body></html>
