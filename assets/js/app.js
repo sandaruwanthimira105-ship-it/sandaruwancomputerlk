@@ -395,123 +395,145 @@
     const customer=validateQuoteCustomer(); if(!customer)return;
     const items=getQuoteItems(); if(!items.length){toast('Select products first');return;}
     const jsPDF=window.jspdf&&window.jspdf.jsPDF; if(!jsPDF){window.print();return;}
+
     const doc=new jsPDF({unit:'pt',format:'a4'});
     const qn=quoteNo();
     const total=items.reduce((s,x)=>s+x.amount,0);
     const W=595, H=842;
-    const navy=[3,22,58], blue=[0,92,220], cyan=[14,179,255], text=[31,41,68], muted=[100,116,139], line=[210,225,247], soft=[246,250,255];
+
+    const navy=[4,18,47], deep=[7,32,77], blue=[0,92,220], blue2=[16,142,255], cyan=[13,199,255];
+    const text=[20,34,63], muted=[100,116,139], line=[214,226,246], soft=[247,250,255], pale=[239,247,255];
+    const bank=CONFIG.bank||{};
 
     function setRGB(arr){ doc.setTextColor(arr[0],arr[1],arr[2]); }
     function fillRGB(arr){ doc.setFillColor(arr[0],arr[1],arr[2]); }
     function drawLogo(x,y,w,h){
       if(CONFIG.logoDataUrl){ try{ doc.addImage(CONFIG.logoDataUrl,'PNG',x,y,w,h); return; }catch(e){} }
-      fillRGB(blue); doc.roundedRect(x,y,w,h,10,10,'F');
+      fillRGB(blue); doc.roundedRect(x,y,w,h,8,8,'F');
       doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(24); pdfText(doc,'S',x+w/2,y+h*0.67,{align:'center'});
     }
-    function pageChrome(){
-      fillRGB([255,255,255]); doc.rect(0,0,W,H,'F');
-      fillRGB(navy); doc.rect(0,0,W,16,'F');
-      fillRGB(blue); doc.rect(0,16,W,6,'F');
-      fillRGB(cyan); doc.rect(40,118,300,8,'F');
-      doc.triangle(340,118,358,118,340,126,'F');
-
-      drawLogo(44,42,56,56);
-      doc.setFont('helvetica','bold'); doc.setFontSize(15); setRGB(navy); pdfText(doc,'SANDARUWAN',112,56);
-      doc.setFontSize(13); pdfText(doc,'COMPUTER ONLINE STORE',112,74);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); setRGB([75,91,125]); pdfText(doc,'YOUR TRUSTED PC PARTNER',112,92);
-
-      doc.setFont('helvetica','bold'); doc.setFontSize(32); setRGB(navy); pdfText(doc,'QUOTATION',358,84);
-      fillRGB(blue); doc.rect(535,62,28,10,'F');
+    function fitOneLine(t,max=48){
+      t=String(t||'');
+      return t.length>max ? t.slice(0,max-1)+'…' : t;
     }
-    function customerBlock(){
-      doc.setFont('helvetica','bold'); doc.setFontSize(10); setRGB(blue); pdfText(doc,'Quotation To:',58,162);
-      doc.setFont('helvetica','bold'); doc.setFontSize(12); setRGB(navy); pdfText(doc,customer.name,58,182);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8.6); setRGB(text);
-      pdfText(doc,customer.phone,58,198);
-      pdfText(doc,customer.email,58,212);
-      doc.splitTextToSize(customer.address,210).slice(0,3).forEach((t,i)=>pdfText(doc,t,58,228+i*12));
+    function warrantyLine(it){
+      const w=clean(it.warranty||it.warrantyMonths||'');
+      if(!w || w==='-' || /^warranty as available$/i.test(w)) return '';
+      return /^warranty/i.test(w) ? w : `Warranty: ${w}`;
+    }
 
-      doc.setDrawColor(line[0],line[1],line[2]); doc.line(320,150,320,242);
-      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setRGB(navy);
-      pdfText(doc,'Quotation No.',350,174); pdfText(doc,':',438,174); setRGB(blue); pdfText(doc,qn,454,174);
-      setRGB(navy); pdfText(doc,'Date',350,198); pdfText(doc,':',438,198); setRGB(blue); pdfText(doc,todayString(),454,198);
-      setRGB(navy); pdfText(doc,'Items',350,222); pdfText(doc,':',438,222); setRGB(blue); pdfText(doc,String(items.length),454,222);
+    function pageBg(){
+      fillRGB([255,255,255]); doc.rect(0,0,W,H,'F');
+      fillRGB(navy); doc.rect(0,0,W,18,'F');
+      fillRGB(blue); doc.rect(0,18,W,4,'F');
+      fillRGB([245,249,255]); doc.rect(0,H-56,W,56,'F');
+      doc.setDrawColor(line[0],line[1],line[2]); doc.setLineWidth(.6); doc.line(40,H-56,W-40,H-56);
+      fillRGB(blue); doc.rect(40,H-56,104,3,'F');
+      fillRGB(cyan); doc.rect(144,H-56,42,3,'F');
+    }
+    function header(pageNo,totalPages){
+      pageBg();
+      drawLogo(42,42,46,46);
+      doc.setFont('helvetica','bold'); doc.setFontSize(13.5); setRGB(navy); pdfText(doc,'SANDARUWAN',100,53);
+      doc.setFontSize(12); pdfText(doc,'COMPUTER ONLINE STORE',100,70);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); setRGB(muted); pdfText(doc,'YOUR TRUSTED PC PARTNER',100,84);
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(29); setRGB(navy); pdfText(doc,'QUOTATION',W-42,70,{align:'right'});
+      fillRGB(blue); doc.roundedRect(W-110,80,68,6,3,3,'F');
+      fillRGB(cyan); doc.roundedRect(W-42,80,14,6,3,3,'F');
+      if(totalPages>1){ doc.setFont('helvetica','normal'); doc.setFontSize(7.5); setRGB(muted); pdfText(doc,`Page ${pageNo} of ${totalPages}`,W-42,96,{align:'right'}); }
+    }
+    function infoCards(){
+      // customer card
+      fillRGB(soft); doc.roundedRect(40,112,300,84,10,10,'F');
+      doc.setDrawColor(line[0],line[1],line[2]); doc.roundedRect(40,112,300,84,10,10,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); setRGB(blue); pdfText(doc,'QUOTATION TO',56,132);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); setRGB(navy); pdfText(doc,fitOneLine(customer.name,34),56,150);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.3); setRGB(text);
+      pdfText(doc,fitOneLine(customer.phone,42),56,164);
+      pdfText(doc,fitOneLine(customer.email,42),56,177);
+      doc.splitTextToSize(customer.address,255).slice(0,1).forEach((t,i)=>pdfText(doc,t,56,190+i*10));
+
+      // quote card
+      fillRGB(pale); doc.roundedRect(356,112,199,84,10,10,'F');
+      doc.setDrawColor(line[0],line[1],line[2]); doc.roundedRect(356,112,199,84,10,10,'S');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.3); setRGB(navy);
+      pdfText(doc,'Quotation No.',372,136); setRGB(blue); pdfText(doc,qn,462,136);
+      setRGB(navy); pdfText(doc,'Date',372,157); setRGB(blue); pdfText(doc,todayString(),462,157);
+      setRGB(navy); pdfText(doc,'Items',372,178); setRGB(blue); pdfText(doc,String(items.length),462,178);
     }
     function tableHeader(y){
-      fillRGB(navy); doc.rect(40,y,W-80,28,'F');
-      doc.setFont('helvetica','bold'); doc.setFontSize(8.6); doc.setTextColor(255,255,255);
-      pdfText(doc,'No.',58,y+18,{align:'center'});
-      pdfText(doc,'Product Name',94,y+18);
-      pdfText(doc,'Qty',350,y+18,{align:'center'});
-      pdfText(doc,'Rate',440,y+18,{align:'right'});
-      pdfText(doc,'Amount',532,y+18,{align:'right'});
-      return y+28;
+      fillRGB(navy); doc.roundedRect(40,y,W-80,22,5,5,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(255,255,255);
+      pdfText(doc,'No.',58,y+14,{align:'center'});
+      pdfText(doc,'Product Name',86,y+14);
+      pdfText(doc,'Qty',364,y+14,{align:'center'});
+      pdfText(doc,'Rate',448,y+14,{align:'right'});
+      pdfText(doc,'Amount',538,y+14,{align:'right'});
+      return y+22;
+    }
+    function drawRow(it,idx,y,rowH){
+      fillRGB(idx%2? [255,255,255] : soft); doc.rect(40,y,W-80,rowH,'F');
+      doc.setDrawColor(line[0],line[1],line[2]); doc.setLineWidth(.45); doc.rect(40,y,W-80,rowH);
+      doc.line(76,y,76,y+rowH); doc.line(335,y,335,y+rowH); doc.line(392,y,392,y+rowH); doc.line(472,y,472,y+rowH);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.3); setRGB(navy); pdfText(doc,String(idx+1),58,y+13.5,{align:'center'});
+      const name=fitOneLine(it.name,62);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.1); setRGB(text); pdfText(doc,name,86,y+9.5);
+      const w=fitOneLine(warrantyLine(it),58);
+      if(w){ doc.setFont('helvetica','normal'); doc.setFontSize(5.6); setRGB(muted); pdfText(doc,w,86,y+18); }
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.3); setRGB(text);
+      pdfText(doc,String(it.qty),364,y+14,{align:'center'});
+      pdfText(doc,money(it.rate),448,y+14,{align:'right'});
+      pdfText(doc,money(it.amount),538,y+14,{align:'right'});
+    }
+    function totalBlock(y){
+      y=Math.min(y,608);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); setRGB(navy);
+      pdfText(doc,'Sub Total',372,y+16); pdfText(doc,money(total),538,y+16,{align:'right'});
+      fillRGB(blue); doc.roundedRect(360,y+28,195,32,7,7,'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+      pdfText(doc,'TOTAL',378,y+49); pdfText(doc,money(total),538,y+49,{align:'right'});
+      return y+76;
+    }
+    function paymentBlock(y){
+      y=Math.max(y,675);
+      y=Math.min(y,682);
+      doc.setDrawColor(blue[0],blue[1],blue[2]); doc.setLineWidth(1); doc.line(40,y,300,y);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9); setRGB(blue); pdfText(doc,'PAYMENT DETAILS',40,y+19);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); setRGB(text);
+      pdfText(doc,`Account Name : ${bank.accountName||'B A D T L SANDARUWAN'}`,40,y+36);
+      pdfText(doc,`Bank Name    : ${bank.name||'BOC BANK'}`,40,y+49);
+      pdfText(doc,`Account No.  : ${bank.accountNumber||'81054889'}`,40,y+62);
+      pdfText(doc,`Branch       : ${bank.branch||'RATHNAPURA BRANCH'}`,40,y+75);
+
+      doc.setDrawColor(line[0],line[1],line[2]); doc.line(330,y+8,330,y+82);
+      doc.setDrawColor(blue[0],blue[1],blue[2]); doc.circle(360,y+42,11);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); setRGB(blue); pdfText(doc,'i',360,y+46,{align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); setRGB(text);
+      pdfText(doc,'Final price may change after',382,y+36);
+      pdfText(doc,'stock and delivery confirmation',382,y+50);
     }
     function footer(){
-      doc.setDrawColor(blue[0],blue[1],blue[2]);
-      doc.line(40,790,320,790);
-      fillRGB(blue); doc.rect(238,786,68,8,'F');
-      doc.line(420,790,555,790);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8); setRGB(blue);
-      pdfText(doc,CONFIG.phoneDisplay||'077 992 6177',58,814);
-      pdfText(doc,'Sandaruwan Computer',184,814);
-      pdfText(doc,'Authorised Sign',487,814,{align:'center'});
-    }
-    function paymentAndTotal(y){
-      const bank=CONFIG.bank||{};
-      if(y>642)y=642;
-      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setRGB(navy);
-      pdfText(doc,'Sub Total',374,y+14); pdfText(doc,money(total),532,y+14,{align:'right'});
-      fillRGB(blue); doc.rect(360,y+28,195,34,'F');
-      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12.5);
-      pdfText(doc,'TOTAL',378,y+50); pdfText(doc,money(total),532,y+50,{align:'right'});
-
-      const py=y+88;
-      doc.setDrawColor(blue[0],blue[1],blue[2]); doc.line(58,py,300,py);
-      doc.setFont('helvetica','bold'); doc.setFontSize(10); setRGB(blue); pdfText(doc,'PAYMENT DETAILS',58,py+22);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8); setRGB(text);
-      pdfText(doc,`Account Name  : ${bank.accountName||'B A D T L SANDARUWAN'}`,58,py+43);
-      pdfText(doc,`Bank Name     : ${bank.name||'BOC BANK'}`,58,py+57);
-      pdfText(doc,`Account No.   : ${bank.accountNumber||'81054889'}`,58,py+71);
-      pdfText(doc,`Branch        : ${bank.branch||'RATHNAPURA BRANCH'}`,58,py+85);
-
-      doc.setDrawColor(line[0],line[1],line[2]); doc.line(333,py+18,333,py+96);
-      doc.setDrawColor(blue[0],blue[1],blue[2]); doc.circle(368,py+53,12);
-      doc.setFont('helvetica','bold'); doc.setFontSize(12); setRGB(blue); pdfText(doc,'i',368,py+58,{align:'center'});
-      doc.setFont('helvetica','normal'); doc.setFontSize(9); setRGB(text);
-      pdfText(doc,'Final price may change after',392,py+48);
-      pdfText(doc,'stock and delivery confirmation',392,py+63);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.3); setRGB(blue);
+      pdfText(doc,CONFIG.phoneDisplay||'077 992 6177',56,818);
+      pdfText(doc,'Sandaruwan Computer',236,818,{align:'center'});
+      pdfText(doc,'Authorised Sign',492,818,{align:'center'});
+      doc.setDrawColor(blue[0],blue[1],blue[2]); doc.line(422,798,555,798);
     }
 
-    const rowsPerPage=12, rowH=30;
-    let index=0, page=0;
+    const rowsPerPage=15, rowH=20.6;
+    const totalPages=Math.ceil(items.length/rowsPerPage);
+    let index=0, page=1;
     while(index<items.length){
-      if(page>0) doc.addPage();
-      pageChrome();
-      if(page===0) customerBlock();
-      let y = page===0 ? 268 : 150;
-      y = tableHeader(y);
+      if(page>1) doc.addPage();
+      header(page,totalPages);
+      if(page===1) infoCards();
+      let y=page===1 ? 222 : 126;
+      y=tableHeader(y);
       const pageItems=items.slice(index,index+rowsPerPage);
-      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
-      pageItems.forEach((it,idx)=>{
-        const globalIndex=index+idx;
-        fillRGB(globalIndex%2? [255,255,255] : soft); doc.rect(40,y,W-80,rowH,'F');
-        doc.setDrawColor(line[0],line[1],line[2]); doc.rect(40,y,W-80,rowH);
-        setRGB(navy);
-        pdfText(doc,String(globalIndex+1),58,y+18,{align:'center'});
-        const nameLines=doc.splitTextToSize(it.name,230);
-        doc.setFont('helvetica','normal'); doc.setFontSize(8.3); setRGB(text); pdfText(doc,nameLines[0],94,y+12);
-        doc.setFontSize(7.2); setRGB(muted); pdfText(doc,`Warranty: ${it.warranty||'-'}`,94,y+24);
-        doc.setFontSize(8.5); setRGB(text);
-        pdfText(doc,String(it.qty),350,y+18,{align:'center'});
-        pdfText(doc,money(it.rate),440,y+18,{align:'right'});
-        pdfText(doc,money(it.amount),532,y+18,{align:'right'});
-        y += rowH;
-      });
-      index += rowsPerPage;
-      if(index>=items.length){
-        paymentAndTotal(y+18);
-      }
+      pageItems.forEach((it,i)=>{ drawRow(it,index+i,y,rowH); y+=rowH; });
+      index+=rowsPerPage;
+      if(index>=items.length){ const afterTotal=totalBlock(y+14); paymentBlock(afterTotal); }
       footer();
       page++;
     }
