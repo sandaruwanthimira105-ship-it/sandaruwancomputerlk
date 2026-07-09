@@ -115,13 +115,14 @@
       .home-main-slider .wide-banner-slide img{object-fit:contain !important;object-position:center center !important;background:#071225;}
       .home-main-slider .wide-dots{right:18px;bottom:12px;}
     }
-  </style>
+  .wide-image-reveal{display:block;text-decoration:none;cursor:pointer}.wide-image-reveal:hover img{transform:scale(1.012)}
+</style>
 </head>
 <body data-page="home">
   <header class="navbar">
     <div class="container nav-wrap">
       <a class="brand" href="index.html" aria-label="Sandaruwan Computer Home">
-        <img class="logo" src="assets/img/logo.png" alt="Sandaruwan Computer Logo">
+        <img class="logo" src="assets/img/logo.jpg" alt="Sandaruwan Computer Logo">
         <div class="brand-title">Sandaruwan Computer<span>Ratnapura PC Store</span></div>
       </a>
       <button class="btn btn-ghost btn-small mobile-menu" id="mobileMenuBtn">Menu</button>
@@ -165,26 +166,7 @@
 
         <div class="prebuild-home-window" aria-label="Pre Build PC product slider">
           <div class="prebuild-home-track" id="homePrebuildTrack">
-            <a class="home-prebuild-card" href="prebuild.html">
-              <img src="assets/img/prebuild.png" alt="Office Value PC">
-              <div class="home-prebuild-card-content"><small>Best Budget</small><h3>Office Value PC</h3><div class="home-price">From Rs. 58,500</div><div class="home-spec">Core i5 4th Gen • 8GB DDR3 • SSD</div></div>
-            </a>
-            <a class="home-prebuild-card" href="prebuild.html">
-              <img src="assets/img/prebuild/prebuild1.png" alt="Study Home PC">
-              <div class="home-prebuild-card-content"><small>DDR4 Value</small><h3>Study / Home PC</h3><div class="home-price">From Rs. 79,500</div><div class="home-spec">Core i5 6th Gen • 8GB DDR4 • SSD</div></div>
-            </a>
-            <a class="home-prebuild-card" href="prebuild.html">
-              <img src="assets/img/prebuild/prebuild2.png" alt="Gaming Starter PC">
-              <div class="home-prebuild-card-content"><small>Popular</small><h3>Gaming Starter PC</h3><div class="home-price">From Rs. 128,000</div><div class="home-spec">Core i5 8th Gen • 16GB DDR4 • GPU option</div></div>
-            </a>
-            <a class="home-prebuild-card" href="prebuild.html">
-              <img src="assets/img/prebuild/prebuild3.png" alt="Modern Desktop PC">
-              <div class="home-prebuild-card-content"><small>Newer Platform</small><h3>Modern Desktop PC</h3><div class="home-price">From Rs. 149,000</div><div class="home-spec">Core i3 10th Gen • DDR4 • Fast SSD</div></div>
-            </a>
-            <a class="home-prebuild-card" href="prebuild.html">
-              <img src="assets/img/prebuild/prebuild4.png" alt="Custom Build Package">
-              <div class="home-prebuild-card-content"><small>Build Your Way</small><h3>Custom Build Package</h3><div class="home-price">Custom price</div><div class="home-spec">Matched motherboard • RAM • SSD • accessories</div></div>
-            </a>
+            <div class="home-prebuild-card" style="display:grid;place-items:center;padding:22px;text-align:center;">Loading Pre Build PCs...</div>
           </div>
         </div>
         <div class="home-prebuild-progress" id="homePrebuildDots" aria-hidden="true"></div>
@@ -238,36 +220,6 @@
   <div class="toast" id="toast"></div>
   <script src="assets/js/config.js"></script><script src="assets/js/app.js"></script>
   <script>
-    (function(){
-      const track=document.getElementById('homePrebuildTrack');
-      const dotsWrap=document.getElementById('homePrebuildDots');
-      if(!track||!dotsWrap)return;
-      const cards=Array.from(track.children);
-      let index=0;
-      function visibleCount(){
-        if(window.innerWidth<=560)return 1;
-        if(window.innerWidth<=820)return 2;
-        if(window.innerWidth<=1050)return 3;
-        return 4;
-      }
-      function maxIndex(){return Math.max(0,cards.length-visibleCount());}
-      function renderDots(){
-        const total=maxIndex()+1;
-        dotsWrap.innerHTML=Array.from({length:total},(_,i)=>'<span class="home-prebuild-dot '+(i===index?'active':'')+'"></span>').join('');
-      }
-      function move(){
-        const gap=parseFloat(getComputedStyle(track).gap)||18;
-        const cardWidth=cards[0] ? cards[0].getBoundingClientRect().width : 0;
-        if(index>maxIndex())index=0;
-        track.style.transform='translateX('+(-(cardWidth+gap)*index)+'px)';
-        renderDots();
-      }
-      let timer=setInterval(function(){index=index>=maxIndex()?0:index+1;move();},3200);
-      window.addEventListener('resize',function(){clearTimeout(window.__homePrebuildResize);window.__homePrebuildResize=setTimeout(move,160);});
-      track.addEventListener('mouseenter',function(){clearInterval(timer);});
-      track.addEventListener('mouseleave',function(){timer=setInterval(function(){index=index>=maxIndex()?0:index+1;move();},3200);});
-      move();
-    })();
 
     (function(){
       const revealItems=document.querySelectorAll('.wide-image-reveal');
