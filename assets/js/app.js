@@ -82,6 +82,16 @@
     return m ? (m[0] + (m[0]==='2'?'ND':m[0]==='3'?'RD':'TH') + ' GEN') : '';
   }
   function normalizeRam(v){ const s=upper(v).replace(/\s+/g,''); return s? s.replace('DDR','DDR') : ''; }
+  function normalizeCapacity(v){
+    const s = upper(v).replace(/\s+/g,'');
+    if(!s) return '';
+    const m = s.match(/(\d+(?:\.\d+)?)(TB|GB|MB)?/);
+    if(!m) return s;
+    return m[1] + (m[2] || 'GB');
+  }
+  const RAM_CAPACITY_OPTIONS = ['2GB','4GB','8GB','16GB','32GB','64GB'];
+  const VGA_MEMORY_OPTIONS = ['2GB','3GB','4GB','6GB','8GB','12GB'];
+  const DRIVE_CAPACITY_OPTIONS = ['120GB','128GB','240GB','256GB','500GB','512GB','1TB','2TB','3TB','4TB'];
   function normalizeProduct(row, i=0){
     const category = categoryName(getVal(row,['CATEGORY','category']));
     const name = getVal(row,['PRODUCT NAME','name','Product']);
@@ -115,7 +125,7 @@
       ssdType: ssdTypeRaw,
       monitorSize: getVal(row,['MONITOR SIZE','SIZE','monitorSize']).replace(/\s*WIDE/i,' WIDE'),
       panelType: upper(getVal(row,['PANEL TYPE','panelType','PANEL'])),
-      capacity: getVal(row,['CAPACITY / MEMORY','CAPACITY','MEMORY','capacity','vgaMemory']),
+      capacity: normalizeCapacity(getVal(row,['CAPACITY / MEMORY','CAPACITY','MEMORY','capacity','vgaMemory'])),
       speed: getVal(row,['SPEED','speed']),
       watt: getVal(row,['WATT','watt']),
       rgb: upper(getVal(row,['RGB','rgb'])) || '',
@@ -297,11 +307,11 @@
       ${sectionHTML('processor','Processor','PROCESSOR')}
       ${sectionHTML('motherboard','Motherboard','MOTHERBOARD',{extraHtml:'<div class="ram-slot-choice" id="quoteRamSlotOptions"></div>'})}
       ${sectionHTML('cpuCooler','CPU Cooler','CPU COOLER')}
-      ${sectionHTML('ram','RAM','RAM',{qty:true,qtyId:'quoteRamQty',extraHtml:'<select class="input" id="quoteRamCapacity" style="margin-top:10px"><option value="">Memory Size</option><option>2GB</option><option>4GB</option><option>8GB</option><option>16GB</option></select>'})}
-      ${sectionHTML('hdd','HDD','HARD DISK',{qty:true,qtyId:'quoteHddQty'})}
-      ${sectionHTML('ssd','SSD','SSD',{qty:true,qtyId:'quoteSsdQty'})}
+      ${sectionHTML('ram','RAM','RAM',{qty:true,qtyId:'quoteRamQty',extraHtml:`<select class="input" id="quoteRamCapacity" style="margin-top:10px"><option value="">RAM Capacity</option>${RAM_CAPACITY_OPTIONS.map(x=>`<option>${x}</option>`).join('')}</select>`})}
+      ${sectionHTML('hdd','HDD','HARD DISK',{qty:true,qtyId:'quoteHddQty',extraHtml:`<select class="input" id="quoteHddCapacity" style="margin-top:10px"><option value="">HDD Capacity</option>${DRIVE_CAPACITY_OPTIONS.map(x=>`<option>${x}</option>`).join('')}</select>`})}
+      ${sectionHTML('ssd','SSD','SSD',{qty:true,qtyId:'quoteSsdQty',extraHtml:`<select class="input" id="quoteSsdCapacity" style="margin-top:10px"><option value="">SSD Capacity</option>${DRIVE_CAPACITY_OPTIONS.map(x=>`<option>${x}</option>`).join('')}</select>`})}
       ${sectionHTML('psu','Power Supply','POWER SUPPLY')}
-      ${sectionHTML('vga','VGA Card','VGA CARD',{extraHtml:'<select class="input" id="quoteVgaMemory" style="margin-top:10px"><option value="">VGA Memory</option><option>2GB</option><option>3GB</option><option>4GB</option><option>6GB</option><option>8GB</option><option>12GB</option></select>'})}
+      ${sectionHTML('vga','VGA Card','VGA CARD',{extraHtml:`<select class="input" id="quoteVgaMemory" style="margin-top:10px"><option value="">VGA Memory</option>${VGA_MEMORY_OPTIONS.map(x=>`<option>${x}</option>`).join('')}</select>`})}
       ${sectionHTML('monitor','Monitor','MONITOR',{extraHtml:'<div class="quote-item-row" style="margin-top:10px"><select class="input" id="quoteMonitorSize"><option value="">Monitor Size</option><option>19 WIDE</option><option>20 WIDE</option><option>22 WIDE</option><option>24 WIDE</option><option>27 WIDE</option><option>29 WIDE</option><option>32 WIDE</option></select><select class="input" id="quotePanelType"><option value="">Panel Type</option><option>VA</option><option>TN</option><option>IPS</option></select></div>'})}
       ${sectionHTML('keyboard','Keyboard','KEYBOARD',{allowBrandNew:false})}
       ${sectionHTML('mouse','Mouse','MOUSE',{allowBrandNew:false})}
@@ -314,7 +324,17 @@
     const table=$('#quoteTable'); if(table) table.innerHTML='<thead><tr><th>No.</th><th>Product Name</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody></tbody>';
     renderCasingPreview(); refreshAllQuoteSelects(false); renderQuote();
     form.addEventListener('click',e=>{ const b=e.target.closest('[data-cond]'); if(!b)return; const wrap=b.closest('[data-cond-key]'); const key=wrap.dataset.condKey; qState.conditions[key]=b.dataset.cond; $all('button',wrap).forEach(x=>x.classList.toggle('active',x===b)); refreshQuoteSelect(key); renderQuote(); });
-    form.addEventListener('change',e=>{ const el=e.target; if(el.matches('select,input')){ if(el.id==='processorSelect') refreshQuoteSelect('motherboard'); if(el.id==='motherboardSelect'){ updateRamSlotOptions(); refreshQuoteSelect('ram'); refreshQuoteSelect('ssd'); } if(el.id==='casingSelect') renderCasingPreview(); if(el.id==='quoteMonitorSize'||el.id==='quotePanelType') refreshQuoteSelect('monitor'); renderQuote(); }});
+    form.addEventListener('change',e=>{ const el=e.target; if(el.matches('select,input')){
+      if(el.id==='processorSelect') refreshQuoteSelect('motherboard');
+      if(el.id==='motherboardSelect'){ updateRamSlotOptions(); refreshQuoteSelect('ram'); refreshQuoteSelect('ssd'); }
+      if(el.id==='quoteRamCapacity') refreshQuoteSelect('ram');
+      if(el.id==='quoteHddCapacity') refreshQuoteSelect('hdd');
+      if(el.id==='quoteSsdCapacity') refreshQuoteSelect('ssd');
+      if(el.id==='quoteVgaMemory') refreshQuoteSelect('vga');
+      if(el.id==='casingSelect') renderCasingPreview();
+      if(el.id==='quoteMonitorSize'||el.id==='quotePanelType') refreshQuoteSelect('monitor');
+      renderQuote();
+    }});
     $('#addQuoteToCartBtn')?.addEventListener('click',()=>{ const items=getQuoteItems(); if(!items.length){toast('Select products first');return;} items.forEach(it=>addToCart({id:it.id,name:it.name,price:it.rate},it.qty,it.name,it.rate)); });
     $('#downloadQuotePdfBtn')?.addEventListener('click',downloadQuotationPdf);
   }
@@ -324,9 +344,12 @@
     const cpu = quoteProducts.find(p=>p.id===$('#processorSelect')?.value);
     const board = quoteProducts.find(p=>p.id===$('#motherboardSelect')?.value);
     if(key==='motherboard' && cpu && cpu.processorGen){ items=items.filter(p=>(p.mbGens||[]).map(upper).includes(upper(cpu.processorGen))); }
-    if(key==='ram' && board && board.ramSupport){ items=items.filter(p=>upper(p.ramSupport)===upper(board.ramSupport)); const cap=upper($('#quoteRamCapacity')?.value); if(cap) items=items.filter(p=>upper(p.capacity)===cap); }
+    if(key==='ram' && board && board.ramSupport){ items=items.filter(p=>upper(p.ramSupport)===upper(board.ramSupport)); }
+    if(key==='ram'){ const cap=normalizeCapacity($('#quoteRamCapacity')?.value); if(cap) items=items.filter(p=>normalizeCapacity(p.capacity)===cap); }
+    if(key==='hdd'){ const cap=normalizeCapacity($('#quoteHddCapacity')?.value); if(cap) items=items.filter(p=>normalizeCapacity(p.capacity)===cap); }
     if(key==='ssd' && board){ const supports=storageSupportList(board).map(upper); items=items.filter(p=>supports.includes(upper(storageType(p)||p.ssdType))); }
-    if(key==='vga'){ const mem=upper($('#quoteVgaMemory')?.value); if(mem) items=items.filter(p=>upper(p.capacity)===mem); }
+    if(key==='ssd'){ const cap=normalizeCapacity($('#quoteSsdCapacity')?.value); if(cap) items=items.filter(p=>normalizeCapacity(p.capacity)===cap); }
+    if(key==='vga'){ const mem=normalizeCapacity($('#quoteVgaMemory')?.value); if(mem) items=items.filter(p=>normalizeCapacity(p.capacity)===mem); }
     if(key==='monitor'){ const size=upper($('#quoteMonitorSize')?.value); const panel=upper($('#quotePanelType')?.value); if(size) items=items.filter(p=>upper(p.monitorSize)===size); if(panel) items=items.filter(p=>upper(p.panelType)===panel); }
     fillQuoteSelect(sel, items, `Skip ${cat}`);
     if(key==='motherboard') updateRamSlotOptions();
@@ -368,25 +391,56 @@
     const customer=validateQuoteCustomer(); if(!customer)return; const items=getQuoteItems(); if(!items.length){toast('Select products first');return;}
     const jsPDF=window.jspdf&&window.jspdf.jsPDF; if(!jsPDF){window.print();return;}
     const doc=new jsPDF({unit:'pt',format:'a4'}); const qn=quoteNo(); const total=items.reduce((s,x)=>s+x.amount,0);
-    const W=595, H=842, blue=[0,84,190], navy=[5,28,76], light=[245,249,255];
-    doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
-    // header logo + brand
-    if(CONFIG.logoDataUrl){ try{doc.addImage(CONFIG.logoDataUrl,'PNG',46,42,54,54);}catch(e){} }
-    doc.setTextColor(...navy); doc.setFont('helvetica','bold'); doc.setFontSize(17); pdfText(doc,'SANDARUWAN',112,60); pdfText(doc,'COMPUTER ONLINE STORE',112,78); doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(49,70,105); pdfText(doc,'YOUR TRUSTED PC PARTNER',112,94);
-    doc.setFillColor(...blue); doc.rect(40,116,285,12,'F'); doc.triangle(325,116,343,116,325,128,'F'); doc.setFont('helvetica','bold'); doc.setFontSize(31); doc.setTextColor(...navy); pdfText(doc,'QUOTATION',378,110); doc.setFillColor(...blue); doc.rect(522,95,32,12,'F');
-    // customer / quote info
-    doc.setFontSize(11); doc.setTextColor(0,84,190); pdfText(doc,'Quotation To:',58,164); doc.setTextColor(...navy); doc.setFont('helvetica','bold'); doc.setFontSize(12); pdfText(doc,customer.name,58,184); doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(39,52,82); pdfText(doc,customer.phone,58,200); pdfText(doc,customer.email,58,216); doc.splitTextToSize(customer.address,200).slice(0,2).forEach((t,i)=>pdfText(doc,t,58,232+i*14));
-    doc.setDrawColor(185,205,235); doc.line(327,150,327,230); doc.setTextColor(...navy); doc.setFont('helvetica','bold'); doc.setFontSize(10); pdfText(doc,'Quotation No.',360,170); pdfText(doc,':',448,170); doc.setTextColor(0,84,190); pdfText(doc,qn,463,170); doc.setTextColor(...navy); pdfText(doc,'Date',360,194); pdfText(doc,':',448,194); doc.setTextColor(0,84,190); pdfText(doc,todayString(),463,194);
-    // table
-    let y=268; doc.setFillColor(...navy); doc.rect(40,y,W-80,28,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(10); pdfText(doc,'No.',55,y+18); pdfText(doc,'Product Name',105,y+18); pdfText(doc,'Qty',334,y+18,{align:'center'}); pdfText(doc,'Rate',405,y+18,{align:'right'}); pdfText(doc,'Amount',528,y+18,{align:'right'}); y+=28;
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setDrawColor(215,226,244);
-    items.forEach((it,i)=>{ if(y>660){ doc.addPage(); y=50; doc.setFillColor(...navy); doc.rect(40,y,W-80,28,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); pdfText(doc,'No.',55,y+18); pdfText(doc,'Product Name',105,y+18); pdfText(doc,'Qty',334,y+18,{align:'center'}); pdfText(doc,'Rate',405,y+18,{align:'right'}); pdfText(doc,'Amount',528,y+18,{align:'right'}); y+=28; doc.setFont('helvetica','normal'); doc.setFontSize(9); }
-      doc.setFillColor(...(i%2?[255,255,255]:light)); doc.rect(40,y,W-80,32,'F'); doc.setTextColor(...navy); pdfText(doc,String(i+1),58,y+20); const txt=doc.splitTextToSize(it.name,205); pdfText(doc,txt[0],105,y+13); if(txt[1]){doc.setFontSize(8); pdfText(doc,txt[1],105,y+25); doc.setFontSize(9);} pdfText(doc,String(it.qty),334,y+20,{align:'center'}); pdfText(doc,money(it.rate),405,y+20,{align:'right'}); pdfText(doc,money(it.amount),528,y+20,{align:'right'}); doc.setDrawColor(215,226,244); doc.line(40,y+32,W-40,y+32); y+=32; });
-    y+=20; doc.setFillColor(...blue); doc.rect(362,y,193,34,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12); pdfText(doc,'TOTAL',380,y+22); pdfText(doc,money(total),530,y+22,{align:'right'});
-    // lower note and payment
-    y+=70; if(y>650)y=650; doc.setDrawColor(0,84,190); doc.line(58,y,300,y); doc.setTextColor(0,84,190); doc.setFontSize(11); doc.setFont('helvetica','bold'); pdfText(doc,'PAYMENT DETAILS',58,y+22); doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(35,48,72); const bank=CONFIG.bank||{}; pdfText(doc,`Account Name : ${bank.accountName||'B A D T L SANDARUWAN'}`,58,y+44); pdfText(doc,`Bank Name       : ${bank.name||'BOC BANK'}`,58,y+58); pdfText(doc,`Account Number : ${bank.accountNumber||'81054889'}`,58,y+72); pdfText(doc,`Branch          : ${bank.branch||'RATHNAPURA BRANCH'}`,58,y+86);
-    doc.setDrawColor(185,205,235); doc.line(340,y+22,340,y+96); doc.setTextColor(...navy); doc.setFontSize(10); pdfText(doc,'Final price may change after',370,y+52); pdfText(doc,'stock and delivery confirmation',370,y+68);
-    doc.setDrawColor(0,84,190); doc.line(40,790,325,790); doc.line(420,790,555,790); doc.setTextColor(0,84,190); doc.setFontSize(9); pdfText(doc,CONFIG.phoneDisplay||'077 992 6177',58,815); pdfText(doc,CONFIG.facebookUrl?'Facebook Page':'Sandaruwan Computer',185,815); pdfText(doc,'Authorised Sign',465,815,{align:'center'});
+    const W=595, H=842, blue=[0,92,220], cyan=[11,188,255], navy=[4,22,58], text=[32,45,72], light=[245,249,255], line=[211,226,247];
+    const bank=CONFIG.bank||{};
+    const addHeader = () => {
+      doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
+      doc.setFillColor(...navy); doc.rect(0,0,W,18,'F');
+      doc.setFillColor(...blue); doc.rect(0,18,W,6,'F');
+      doc.setFillColor(...cyan); doc.rect(40,104,300,10,'F');
+      doc.triangle(340,104,358,104,340,114,'F');
+      if(CONFIG.logoDataUrl){ try{doc.addImage(CONFIG.logoDataUrl,'PNG',42,42,58,58);}catch(e){} }
+      doc.setFont('helvetica','bold'); doc.setTextColor(...navy); doc.setFontSize(16); pdfText(doc,'SANDARUWAN',112,58); pdfText(doc,'COMPUTER ONLINE STORE',112,76);
+      doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(63,78,110); pdfText(doc,'YOUR TRUSTED PC PARTNER',112,93);
+      doc.setFont('helvetica','bold'); doc.setFontSize(32); doc.setTextColor(...navy); pdfText(doc,'QUOTATION',365,88);
+      doc.setFillColor(...blue); doc.rect(532,65,28,10,'F');
+    };
+    addHeader();
+    // Customer / quotation details
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...blue); pdfText(doc,'Quotation To:',58,154);
+    doc.setTextColor(...navy); doc.setFontSize(12); pdfText(doc,customer.name,58,174);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...text); pdfText(doc,customer.phone,58,190); pdfText(doc,customer.email,58,204); doc.splitTextToSize(customer.address,215).slice(0,3).forEach((t,i)=>pdfText(doc,t,58,220+i*13));
+    doc.setDrawColor(...line); doc.line(322,148,322,236);
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy); pdfText(doc,'Quotation No.',350,168); pdfText(doc,':',435,168); doc.setTextColor(...blue); pdfText(doc,qn,450,168);
+    doc.setTextColor(...navy); pdfText(doc,'Date',350,193); pdfText(doc,':',435,193); doc.setTextColor(...blue); pdfText(doc,todayString(),450,193);
+    // Items table
+    let y=270;
+    const drawTableHead=()=>{doc.setFillColor(...navy); doc.rect(40,y,W-80,30,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); pdfText(doc,'No.',58,y+19); pdfText(doc,'Product Name',104,y+19); pdfText(doc,'Qty',333,y+19,{align:'center'}); pdfText(doc,'Rate',413,y+19,{align:'right'}); pdfText(doc,'Amount',532,y+19,{align:'right'}); y+=30;};
+    drawTableHead(); doc.setFont('helvetica','normal'); doc.setFontSize(9);
+    items.forEach((it,i)=>{
+      if(y>662){ doc.addPage(); y=44; addHeader(); y=150; drawTableHead(); doc.setFont('helvetica','normal'); doc.setFontSize(9); }
+      doc.setFillColor(...(i%2? [255,255,255] : light)); doc.rect(40,y,W-80,34,'F'); doc.setDrawColor(...line); doc.rect(40,y,W-80,34);
+      doc.setTextColor(...navy); pdfText(doc,String(i+1),62,y+21,{align:'center'});
+      const txt=doc.splitTextToSize(it.name,220); pdfText(doc,txt[0],104,y+14); if(txt[1]){doc.setFontSize(8); pdfText(doc,txt[1],104,y+27); doc.setFontSize(9);}
+      pdfText(doc,String(it.qty),333,y+21,{align:'center'}); pdfText(doc,money(it.rate),413,y+21,{align:'right'}); pdfText(doc,money(it.amount),532,y+21,{align:'right'}); y+=34;
+    });
+    // Total block
+    y+=18; const totalY=y;
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy); pdfText(doc,'Sub Total',376,totalY+14); pdfText(doc,money(total),532,totalY+14,{align:'right'});
+    doc.setFillColor(...blue); doc.rect(360,totalY+32,195,36,'F'); doc.setTextColor(255,255,255); doc.setFontSize(13); pdfText(doc,'TOTAL',378,totalY+55); pdfText(doc,money(total),532,totalY+55,{align:'right'});
+    // Lower sections
+    y=totalY+98; if(y>660)y=660;
+    doc.setDrawColor(...blue); doc.line(58,y,300,y); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...blue); pdfText(doc,'PAYMENT DETAILS',58,y+22);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.2); doc.setTextColor(...text);
+    pdfText(doc,`Account Name  : ${bank.accountName||'B A D T L SANDARUWAN'}`,58,y+44);
+    pdfText(doc,`Bank Name     : ${bank.name||'BOC BANK'}`,58,y+58);
+    pdfText(doc,`Account No.   : ${bank.accountNumber||'81054889'}`,58,y+72);
+    pdfText(doc,`Branch        : ${bank.branch||'RATHNAPURA BRANCH'}`,58,y+86);
+    doc.setDrawColor(...line); doc.line(333,y+20,333,y+96);
+    doc.setDrawColor(...blue); doc.circle(368,y+54,12); doc.setFont('helvetica','bold'); doc.setTextColor(...blue); doc.setFontSize(13); pdfText(doc,'i',368,y+59,{align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...text); pdfText(doc,'Final price may change after',392,y+50); pdfText(doc,'stock and delivery confirmation',392,y+65);
+    doc.setDrawColor(...blue); doc.line(40,790,325,790); doc.setFillColor(...blue); doc.rect(240,786,70,8,'F'); doc.line(420,790,555,790);
+    doc.setFontSize(8.5); doc.setTextColor(...blue); pdfText(doc,CONFIG.phoneDisplay||'077 992 6177',58,815); pdfText(doc,'Sandaruwan Computer',185,815); pdfText(doc,'Authorised Sign',487,815,{align:'center'});
     doc.save(`sandaruwan-computer-quotation-${qn}.pdf`);
   }
 
