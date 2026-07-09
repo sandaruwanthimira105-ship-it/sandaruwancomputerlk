@@ -105,7 +105,16 @@
 
     @media (max-width:1050px){.home-prebuild-card{flex-basis:calc((100% - 36px) / 3)}.home-main-slider{aspect-ratio:21/9}}
     @media (max-width:820px){.home-prebuild-card{flex-basis:calc((100% - 18px) / 2)}.section-head-row{align-items:flex-start;flex-direction:column}.home-main-slider{border-radius:22px}}
-    @media (max-width:560px){.home-banner-hero{padding:28px 0 14px}.home-main-slider{aspect-ratio:16/9}.home-prebuild-card{flex-basis:100%}.prebuild-home-section{padding:38px 0 24px}.home-prebuild-card-content{padding:15px}.home-prebuild-card h3{font-size:19px}}
+    @media (max-width:560px){.home-banner-hero{padding:28px 0 14px}.home-main-slider{aspect-ratio:21/9;border-radius:20px}.home-main-slider .wide-banner-slide img{object-fit:contain;object-position:center}.home-prebuild-card{flex-basis:100%}.prebuild-home-section{padding:38px 0 24px}.home-prebuild-card-content{padding:15px}.home-prebuild-card h3{font-size:19px}}
+
+
+    /* V44 mobile top banner crop fix: keep full 21:9 banner visible on phones */
+    @media (max-width:680px){
+      .home-banner-hero .container{width:100%;padding-inline:12px;}
+      .home-main-slider{aspect-ratio:21 / 9 !important;border-radius:20px;max-height:none;background:#071225;}
+      .home-main-slider .wide-banner-slide img{object-fit:contain !important;object-position:center center !important;background:#071225;}
+      .home-main-slider .wide-dots{right:18px;bottom:12px;}
+    }
   </style>
 </head>
 <body data-page="home">
@@ -127,10 +136,10 @@
     <section class="home-banner-hero">
       <div class="container">
         <div class="wide-banner-carousel home-main-slider" aria-label="Sandaruwan Computer promotional banners">
-          <div class="wide-banner-slide active"><img src="assets/img/01.jpg" alt="Online Quotation PDF Banner"></div>
-          <div class="wide-banner-slide"><img src="assets/img/02.jpg" alt="Used and New Computer Parts Banner"></div>
-          <div class="wide-banner-slide"><img src="assets/img/03.jpg" alt="Compatible PC Build Parts Banner"></div>
-          <div class="wide-banner-slide"><img src="assets/img/04.jpg" alt="WhatsApp Order Receipt Banner"></div>
+          <div class="wide-banner-slide active"><img src="assets/img/banners/banner-quotation.jpg" alt="Online Quotation PDF Banner"></div>
+          <div class="wide-banner-slide"><img src="assets/img/banners/banner-products.jpg" alt="Used and New Computer Parts Banner"></div>
+          <div class="wide-banner-slide"><img src="assets/img/banners/banner-compatible.jpg" alt="Compatible PC Build Parts Banner"></div>
+          <div class="wide-banner-slide"><img src="assets/img/banners/banner-whatsapp.jpg" alt="WhatsApp Order Receipt Banner"></div>
           <div class="slide-dots wide-dots" id="wideBannerDots" aria-hidden="true"></div>
         </div>
         <div class="hero-quick-actions" aria-label="Quick actions">
@@ -183,9 +192,9 @@
     <section class="after-prebuild-banners" aria-label="Featured wide banners">
       <div class="container">
         <div class="wide-image-stack">
-          <div class="wide-image-reveal"><img src="assets/img/A.jpg" alt="Used and New Computer Parts"></div>
-          <div class="wide-image-reveal"><img src="assets/img/B.jpg" alt="Matched Compatible PC Parts"></div>
-          <div class="wide-image-reveal"><img src="assets/img/C.jpg" alt="WhatsApp Order and Delivery Support"></div>
+          <div class="wide-image-reveal"><img src="assets/img/banners/banner-products.jpg" alt="Used and New Computer Parts"></div>
+          <div class="wide-image-reveal"><img src="assets/img/banners/banner-compatible.jpg" alt="Matched Compatible PC Parts"></div>
+          <div class="wide-image-reveal"><img src="assets/img/banners/banner-whatsapp.jpg" alt="WhatsApp Order and Delivery Support"></div>
         </div>
       </div>
     </section>
@@ -225,7 +234,7 @@
   </main>
   <footer class="footer"><div class="container">© Sandaruwan Computer • PC Store Ratnapura</div></footer>
   <div class="toast" id="toast"></div>
-  <script src="assets/js/config.js?v=22"></script><script src="assets/js/app.js?v=22"></script>
+  <script src="assets/js/config.js"></script><script src="assets/js/app.js"></script>
   <script>
     (function(){
       const track=document.getElementById('homePrebuildTrack');
