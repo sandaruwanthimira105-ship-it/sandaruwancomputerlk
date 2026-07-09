@@ -606,6 +606,7 @@
 ];
 
   let productsCache = null;
+  let prebuildsCache = null;
   let quoteProducts = [];
   let lastReceiptText = '';
 
@@ -728,6 +729,97 @@
     return productsCache;
   }
 
+  function splitSpecs(v){
+    if(Array.isArray(v))return v.map(clean).filter(Boolean);
+    const raw=clean(v);
+    if(!raw)return [];
+    return raw.split(/\n|\||;/).map(clean).filter(Boolean);
+  }
+
+  function getByKeys(row,keys){
+    for(const k of keys){
+      if(row[k]!==undefined && clean(row[k])!=='')return row[k];
+      const found=Object.keys(row).find(h=>upper(h).replace(/[^A-Z0-9]/g,'')===upper(k).replace(/[^A-Z0-9]/g,''));
+      if(found && clean(row[found])!=='')return row[found];
+    }
+    return '';
+  }
+
+  function normalizePrebuild(row,i=0){
+    const title=clean(getByKeys(row,['TITLE','PRODUCT NAME','PACKAGE NAME','name','title']))||'Pre Build PC';
+    const specs=[];
+    for(let n=1;n<=12;n++){
+      const spec=clean(getByKeys(row,[`SPEC ${n}`,`SPEC${n}`,`FEATURE ${n}`,`FEATURE${n}`]));
+      if(spec)specs.push(spec);
+    }
+    splitSpecs(getByKeys(row,['SPECS','SPECIFICATIONS','FEATURES'])).forEach(x=>{if(!specs.includes(x))specs.push(x)});
+    const priceValue=toNumber(getByKeys(row,['PRICE','PRICE NUMBER','PACKAGE PRICE','price']));
+    const priceText=clean(getByKeys(row,['PRICE TEXT','DISPLAY PRICE','PRICE LABEL','priceText'])) || (priceValue?`From ${money(priceValue)}`:'Contact for price');
+    const warrantyMonths=clean(getByKeys(row,['WARRANTY MONTHS','WARRANTY MONTH','WARRANTY_MONTHS']));
+    const warrantyTextValue=clean(getByKeys(row,['WARRANTY TEXT','WARRANTY','WARRANTY PERIOD','warranty']));
+    const status=upper(getByKeys(row,['STATUS','AVAILABILITY'])) || 'INSTOCK';
+    return {
+      id:clean(getByKeys(row,['PREBUILD ID','ID','PACKAGE ID','id']))||`PB-${i+1}`,
+      title,
+      price:priceText,
+      priceNumber:priceValue,
+      image:clean(getByKeys(row,['IMAGE PATH','IMAGE','IMAGE URL','image']))||'assets/img/logo.jpg',
+      tag:clean(getByKeys(row,['TAG','BADGE','LABEL']))||'Pre Build PC',
+      packageType:clean(getByKeys(row,['PACKAGE TYPE','TYPE']))||clean(getByKeys(row,['TAG','BADGE']))||'Ready PC',
+      warranty:warrantyTextValue || (warrantyMonths?`${warrantyMonths} month${Number(warrantyMonths)===1?'':'s'} warranty`:'Shop warranty as available'),
+      warrantyMonths,
+      description:clean(getByKeys(row,['DESCRIPTION','DETAILS','description']))||'Ready PC package from Sandaruwan Computer. Please confirm availability and final price before payment.',
+      specs:specs.slice(0,12),
+      status
+    };
+  }
+
+  function prebuildPriceText(p){return clean(p.price)||'Contact for price'}
+  function prebuildProduct(p){
+    return {
+      id:p.id,
+      name:p.title,
+      category:'PRE BUILD PC',
+      condition:'PACKAGE',
+      price:toNumber(p.priceNumber),
+      image:p.image||'assets/img/logo.jpg',
+      description:p.description,
+      warranty:p.warranty,
+      warrantyMonths:p.warrantyMonths,
+      memory:'',
+      stock:p.status||''
+    };
+  }
+
+  async function loadPrebuilds(){
+    if(prebuildsCache)return prebuildsCache;
+    let rows=[];
+    const csvUrl=clean(CONFIG.prebuildCsvUrl||CONFIG.prebuildSheetCsvUrl);
+    if(csvUrl){
+      try{const res=await fetch(csvUrl,{cache:'no-store'});if(!res.ok)throw new Error('Prebuild CSV error');rows=parseCSV(await res.text())}catch(e){console.warn('Pre Build sheet load failed. Local/static packages used.',e)}
+    }
+    if(!rows.length && location.protocol!=='file:'){
+      try{const res=await fetch('data/prebuilds.csv',{cache:'no-store'});if(res.ok)rows=parseCSV(await res.text())}catch(e){console.warn('Local prebuild CSV load failed.',e)}
+    }
+    if(!rows.length)rows=PREBUILDS;
+    prebuildsCache=rows.map(normalizePrebuild).filter(p=>p.title);
+    return prebuildsCache;
+  }
+
+  function canOrderPrebuild(p){return !['OUTOFSTOCK','OUT OF STOCK'].includes(upper(p.status))}
+  async function addPrebuildToCart(id,goCart=false){
+    const packages=await loadPrebuilds();
+    const p=packages.find(x=>x.id===id);if(!p)return;
+    if(!canOrderPrebuild(p)){toast('This package is out of stock');return;}
+    if(!toNumber(p.priceNumber)){toast('Package price missing');return;}
+    const cart=getCart();
+    const found=cart.find(x=>x.id===id && x.type==='prebuild');
+    if(found)found.qty+=1;else cart.push({id,qty:1,type:'prebuild'});
+    saveCart(cart);
+    toast('Pre Build PC added to cart');
+    if(goCart)setTimeout(()=>{window.location.href='cart.html'},300);
+  }
+
   function getCart(){try{return JSON.parse(localStorage.getItem(CART_KEY)||'[]')}catch{return[]}}
   function saveCart(cart){localStorage.setItem(CART_KEY,JSON.stringify(cart));updateCartCount()}
   function cartCount(){return getCart().reduce((s,it)=>s+Number(it.qty||1),0)}
@@ -744,7 +836,7 @@
     document.addEventListener('click',e=>{
       const btn=e.target.closest('[data-add-to-cart]');if(btn)addToCart(btn.getAttribute('data-add-to-cart'));
       const rm=e.target.closest('[data-remove-cart]');if(rm)removeFromCart(rm.getAttribute('data-remove-cart'));
-      const pre=e.target.closest('[data-prebuild-whatsapp]');if(pre)sendPrebuildWhatsApp(pre.getAttribute('data-prebuild-whatsapp'));
+      const pre=e.target.closest('[data-add-prebuild-cart]');if(pre)addPrebuildToCart(pre.getAttribute('data-add-prebuild-cart'), true);
     });
     document.addEventListener('change',e=>{const qty=e.target.closest('[data-cart-qty]');if(qty)setQty(qty.getAttribute('data-cart-qty'),qty.value)});
   }
@@ -756,8 +848,27 @@
     setInterval(()=>{slides[idx].classList.remove('active');dots[idx]?.classList.remove('active');idx=(idx+1)%slides.length;slides[idx].classList.add('active');dots[idx]?.classList.add('active')},interval);
   }
   function initHome(){
-    initCarousel('.prebuild-slide','#prebuildDots',3600);
     initCarousel('.wide-banner-slide','#wideBannerDots',4300);
+    initHomePrebuildSlider();
+  }
+
+  async function initHomePrebuildSlider(){
+    const track=$('#homePrebuildTrack'),dotsWrap=$('#homePrebuildDots');if(!track||!dotsWrap)return;
+    const packages=await loadPrebuilds();
+    track.innerHTML=packages.map(p=>`<a class="home-prebuild-card" href="prebuild.html" data-home-prebuild="${esc(p.id)}">
+      <img src="${esc(p.image)}" alt="${esc(p.title)}" onerror="this.src='assets/img/logo.jpg'">
+      <div class="home-prebuild-card-content"><small>${esc(p.tag)}</small><h3>${esc(p.title)}</h3><div class="home-price">${esc(prebuildPriceText(p))}</div><div class="home-spec">${esc((p.specs||[]).slice(0,3).join(' • ')||p.description)}</div></div>
+    </a>`).join('');
+    const cards=Array.from(track.children);let index=0,timer=null;
+    function visibleCount(){if(window.innerWidth<=560)return 1;if(window.innerWidth<=820)return 2;if(window.innerWidth<=1050)return 3;return 4}
+    function maxIndex(){return Math.max(0,cards.length-visibleCount())}
+    function renderDots(){const total=maxIndex()+1;dotsWrap.innerHTML=Array.from({length:total},(_,i)=>`<span class="home-prebuild-dot ${i===index?'active':''}"></span>`).join('')}
+    function move(){const gap=parseFloat(getComputedStyle(track).gap)||18;const cardWidth=cards[0]?cards[0].getBoundingClientRect().width:0;if(index>maxIndex())index=0;track.style.transform=`translateX(${-(cardWidth+gap)*index}px)`;renderDots()}
+    function start(){clearInterval(timer);timer=setInterval(()=>{index=index>=maxIndex()?0:index+1;move()},3200)}
+    window.addEventListener('resize',()=>{clearTimeout(window.__homePrebuildResize);window.__homePrebuildResize=setTimeout(move,160)});
+    track.addEventListener('mouseenter',()=>clearInterval(timer));
+    track.addEventListener('mouseleave',start);
+    move();start();
   }
 
   function productCard(p){
@@ -859,11 +970,13 @@
   }
 
   function prebuildCard(p){
+    const status=upper(p.status||'INSTOCK');
+    const disabled=!canOrderPrebuild(p);
     return `<article class="card prebuild-card" data-prebuild-id="${esc(p.id)}" tabindex="0" aria-label="View ${esc(p.title)} package details">
-      <div class="prebuild-img"><img src="${esc(p.image)}" alt="${esc(p.title)}"><div class="tag-row"><span class="tag new">${esc(p.tag)}</span></div></div>
-      <div class="prebuild-body"><h3>${esc(p.title)}</h3><div class="price">${esc(p.price)}</div>
-        <div class="spec-list">${p.specs.map(s=>`<span>${esc(s)}</span>`).join('')}</div>
-        <div class="product-actions"><button class="btn btn-ghost btn-small" data-view-prebuild="${esc(p.id)}">View Details</button><button class="btn btn-whatsapp btn-small" data-prebuild-whatsapp="${esc(p.id)}">Order on WhatsApp</button><a class="btn btn-ghost btn-small" href="quotation.html">Customize</a></div>
+      <div class="prebuild-img"><img src="${esc(p.image)}" alt="${esc(p.title)}" onerror="this.src='assets/img/logo.jpg'"><div class="tag-row"><span class="tag new">${esc(p.tag)}</span>${status?`<span class="tag ${status==='OUTOFSTOCK'?'used':'new'}">${esc(status)}</span>`:''}</div></div>
+      <div class="prebuild-body"><h3>${esc(p.title)}</h3><div class="price">${esc(prebuildPriceText(p))}</div>
+        <div class="spec-list">${(p.specs||[]).slice(0,6).map(s=>`<span>${esc(s)}</span>`).join('')}</div>
+        <div class="product-actions"><button class="btn btn-ghost btn-small" data-view-prebuild="${esc(p.id)}">View Details</button><button class="btn btn-primary btn-small" ${disabled?'disabled':''} data-add-prebuild-cart="${esc(p.id)}">Place Order</button></div>
       </div>
     </article>`;
   }
@@ -883,55 +996,61 @@
     modal.addEventListener('click',e=>{
       if(e.target.closest('[data-close-prebuild-modal]'))closePrebuildModal();
       const order=e.target.closest('[data-modal-prebuild-order]');
-      if(order){sendPrebuildWhatsApp(order.getAttribute('data-modal-prebuild-order'));closePrebuildModal();}
+      if(order){addPrebuildToCart(order.getAttribute('data-modal-prebuild-order'), true);closePrebuildModal();}
     });
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))closePrebuildModal()});
   }
   function closePrebuildModal(){const modal=$('#prebuildModal');if(!modal)return;modal.classList.remove('open');modal.setAttribute('aria-hidden','true');document.body.classList.remove('modal-open')}
-  function openPrebuildModal(id){
+  async function openPrebuildModal(id){
     ensurePrebuildModal();
-    const p=PREBUILDS.find(x=>x.id===id);if(!p)return;
+    const packages=await loadPrebuilds();
+    const p=packages.find(x=>x.id===id);if(!p)return;
     const content=$('#prebuildModalContent');if(!content)return;
+    const disabled=!canOrderPrebuild(p);
     content.innerHTML=`<div class="product-modal-grid">
       <div class="product-modal-image"><img src="${esc(p.image)}" alt="${esc(p.title)}" onerror="this.src='assets/img/logo.jpg'"></div>
       <div class="product-modal-info">
-        <div class="modal-tag-row"><span class="tag new">${esc(p.tag)}</span><span class="tag">Pre Build PC</span></div>
+        <div class="modal-tag-row"><span class="tag new">${esc(p.tag)}</span><span class="tag">Pre Build PC</span>${p.status?`<span class="tag ${upper(p.status)==='OUTOFSTOCK'?'used':'new'}">${esc(p.status)}</span>`:''}</div>
         <h2 id="prebuildModalTitle">${esc(p.title)}</h2>
-        <div class="product-modal-price">${esc(p.price)}</div>
+        <div class="product-modal-price">${esc(prebuildPriceText(p))}</div>
         <p class="product-modal-description">${esc(p.description||'Ready PC package from Sandaruwan Computer. Please confirm availability, final price and warranty before payment.')}</p>
         <div class="product-detail-list">
           <div><span>Warranty Period</span><b>${esc(p.warranty||'Shop warranty as available')}</b></div>
-          <div><span>Package Type</span><b>${esc(p.tag)}</b></div>
-          <div><span>Order Method</span><b>WhatsApp confirmation</b></div>
+          <div><span>Package Type</span><b>${esc(p.packageType||p.tag)}</b></div>
+          <div><span>Order Method</span><b>Cart checkout + WhatsApp receipt</b></div>
         </div>
         <h3>Package Specifications</h3>
-        <div class="spec-list modal-specs">${p.specs.map(s=>`<span>${esc(s)}</span>`).join('')}</div>
-        <div class="product-modal-order"><div class="modal-qty-row"><button class="btn btn-whatsapp" data-modal-prebuild-order="${esc(p.id)}">Order on WhatsApp</button><a class="btn btn-ghost" href="quotation.html">Customize Build</a></div></div>
+        <div class="spec-list modal-specs">${(p.specs||[]).map(s=>`<span>${esc(s)}</span>`).join('')}</div>
+        <div class="product-modal-order"><div class="modal-qty-row"><button class="btn btn-primary" ${disabled?'disabled':''} data-modal-prebuild-order="${esc(p.id)}">Place Order</button></div></div>
       </div>
     </div>`;
     const modal=$('#prebuildModal');modal.classList.add('open');modal.setAttribute('aria-hidden','false');document.body.classList.add('modal-open');
   }
-  function initPrebuildPage(){
+  async function initPrebuildPage(){
     const grid=$('#prebuildGrid');if(!grid)return;
     ensurePrebuildModal();
-    grid.innerHTML=PREBUILDS.map(prebuildCard).join('');
+    const packages=await loadPrebuilds();
+    const count=$('#prebuildResultCount');if(count)count.textContent=`${packages.length} packages`;
+    grid.innerHTML=packages.length?packages.map(prebuildCard).join(''):'<div class="empty-state card">No pre build packages found.</div>';
     grid.addEventListener('click',e=>{
       const view=e.target.closest('[data-view-prebuild]');if(view){e.preventDefault();openPrebuildModal(view.getAttribute('data-view-prebuild'));return;}
+      if(e.target.closest('[data-add-prebuild-cart]'))return;
       if(e.target.closest('button,a,input,select,textarea'))return;
       const card=e.target.closest('[data-prebuild-id]');if(card)openPrebuildModal(card.getAttribute('data-prebuild-id'));
     });
     grid.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.closest('[data-prebuild-id]')){e.preventDefault();openPrebuildModal(e.target.closest('[data-prebuild-id]').getAttribute('data-prebuild-id'))}});
   }
-  function sendPrebuildWhatsApp(id){
-    const p=PREBUILDS.find(x=>x.id===id);if(!p)return;
+  async function sendPrebuildWhatsApp(id){
+    const packages=await loadPrebuilds();
+    const p=packages.find(x=>x.id===id);if(!p)return;
     const num=clean(CONFIG.whatsappNumber).replace(/\D/g,'');
     const text=`${CONFIG.businessName||'Sandaruwan Computer'}
 PRE BUILD PC ORDER REQUEST
 
 Package: ${p.title}
-Price: ${p.price}
+Price: ${prebuildPriceText(p)}
 Specs:
-${p.specs.map(s=>'• '+s).join('\n')}
+${(p.specs||[]).map(s=>'• '+s).join('\n')}
 
 Please confirm availability and final price.`;
     window.open(`https://wa.me/${num}?text=${encodeURIComponent(text)}`,'_blank','noopener');
@@ -1073,8 +1192,15 @@ Please confirm availability and final price.`;
   }
 
   async function cartItems(){
-    const products=await loadProducts();const cart=getCart();
-    return cart.map(it=>({product:byId(products,it.id),qty:Number(it.qty||1)})).filter(x=>x.product);
+    const products=await loadProducts();
+    const prebuilds=await loadPrebuilds();
+    const cart=getCart();
+    return cart.map(it=>{
+      let product=null;
+      if(it.type==='prebuild')product=prebuildProduct(prebuilds.find(p=>p.id===it.id)||{});
+      else product=byId(products,it.id);
+      return {product,qty:Number(it.qty||1),type:it.type||'product'};
+    }).filter(x=>x.product&&x.product.id);
   }
   async function initCartPage(){
     const view=$('#cartView');if(!view)return;const items=await cartItems();
@@ -1139,59 +1265,6 @@ Contact: ${CONFIG.phoneDisplay||''}`;
     });
     $('#downloadReceiptBtn')?.addEventListener('click',downloadReceiptPdf);
   }
-
-  /* V45 laptop category + Google Sheet filter patch */
-  (function(){
-    if(!CATEGORIES.includes('LAPTOP')) CATEGORIES.push('LAPTOP');
-    if(!CATEGORIES.includes('VGA CARD')) CATEGORIES.push('VGA CARD');
-    if(!CATEGORIES.includes('MOUSE PAD')) CATEGORIES.push('MOUSE PAD');
-    if(!CATEGORIES.includes('RGB CASING FAN')) CATEGORIES.push('RGB CASING FAN');
-    if(!CATEGORIES.includes('OTHER')) CATEGORIES.push('OTHER');
-    Object.assign(CATEGORY_ALIASES,{LAPTOP:'LAPTOP',LAPTOPS:'LAPTOP',NOTEBOOK:'LAPTOP',NOTEBOOKS:'LAPTOP',VGA:'VGA CARD',VGACARD:'VGA CARD','VGA CARD':'VGA CARD',GRAPHICSCARD:'VGA CARD','GRAPHICS CARD':'VGA CARD',GPU:'VGA CARD',MOUSEPAD:'MOUSE PAD','MOUSE PAD':'MOUSE PAD',FAN:'RGB CASING FAN','RGB CASING FAN':'RGB CASING FAN',OTHER:'OTHER'});
-    function normKey(k){return String(k||'').toUpperCase().replace(/[^A-Z0-9]/g,'')}
-    function pick(obj,...keys){if(!obj)return '';for(const k of keys){if(Object.prototype.hasOwnProperty.call(obj,k)&&clean(obj[k])!=='')return clean(obj[k]);}const m={};Object.keys(obj).forEach(k=>m[normKey(k)]=obj[k]);for(const k of keys){const v=m[normKey(k)];if(clean(v)!=='')return clean(v);}return ''}
-    function normalizeCondition(v){const x=upper(v);return (x.includes('BRAND')||x==='NEW')?'BRAND NEW':'USED'}
-    function yesNo(v){return ['YES','Y','TRUE','1','SUPPORTED','AVAILABLE'].includes(upper(v))}
-    function statusLabel(p){const s=upper(p.status);if(!s||s==='IN STOCK')return 'INSTOCK';return s}
-    function isQuotable(p){const s=statusLabel(p);return s==='INSTOCK'||s==='ONLINE ORDERS ONLY'||s==='ONLINE ORDER ONLY'}
-    function isNewCond(p){return upper(p.condition).includes('NEW')}
-    function categoryLabel(cat){return clean(cat).replace(/\b\w/g,c=>c.toUpperCase())}
-    function unique(items,getter){return Array.from(new Set(items.map(getter).map(x=>clean(x)).filter(Boolean))).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}))}
-    function populateSelect(sel,values,placeholder){if(!sel)return;const cur=sel.value;sel.innerHTML=`<option value="">${esc(placeholder)}</option>`+values.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');if(values.includes(cur))sel.value=cur;}
-    function getRamSlotOptions(p){const opts=[];[p.ramSlotOption1,p.ramSlotOption2,p.ramSlot].forEach(v=>{const u=upper(v);if(u.includes('2')&&!opts.includes('2 RAM SLOT'))opts.push('2 RAM SLOT');if(u.includes('4')&&!opts.includes('4 RAM SLOT'))opts.push('4 RAM SLOT')});return opts.length?opts:['2 RAM SLOT'];}
-
-    normalizeProduct=function(p,i=0){
-      const category=categoryName(pick(p,'CATEGORY','category'))||'OTHER';
-      const mbGen1=pick(p,'MB GEN OPTION 1','MB GEN TAB OPTION 1','mbGenOption1');
-      const mbGen2=pick(p,'MB GEN OPTION 2','MB GEN TAB OPTION 2','mbGenOption2');
-      const processorGen=pick(p,'PROCESSOR GEN','PROSSOR GEN TAB','processorGen','generation','gen');
-      const ramSupport=upper(pick(p,'RAM SUPPORT','RAM TYPE','ramSupport','memory','ram'));
-      const capacity=upper(pick(p,'CAPACITY / MEMORY','CAPACITY','MEMORY','capacityMemory'));
-      const gens=category==='MOTHERBOARD'?parseGenerations([mbGen1,mbGen2].join(' ')):parseGenerations(processorGen||pick(p,'compatibleGenerations','generation','gen'));
-      const ssdSupport=upper(pick(p,'SSD SUPPORT','storageSupport','ssdSupport'));
-      let ssdType=upper(pick(p,'SSD TYPE','storageType','ssdType','interface'));
-      if(!ssdType&&category==='SSD')ssdType='SATA SSD';
-      if(ssdType.includes('NVME'))ssdType='NVME SSD';else if(ssdType.includes('M.2')||ssdType.includes('M2'))ssdType='M.2 SSD';else if(ssdType.includes('SATA'))ssdType='SATA SSD';
-      return {id:pick(p,'PRODUCT ID','ID','id')||`ITEM-${i+1}`,name:pick(p,'PRODUCT NAME','NAME','name')||'Product',category,condition:normalizeCondition(pick(p,'CONDITION','condition')||'USED'),status:statusLabel({status:pick(p,'STATUS','status')}),price:toNumber(pick(p,'PRICE','price')),image:pick(p,'IMAGE PATH','IMAGE','image','imageUrl')||'assets/img/logo.jpg',brand:upper(pick(p,'BRAND','brand')),model:upper(pick(p,'MODEL / SERIES','MODEL','model','series')),generation:gens[0]||'',generations:gens,compatibleGenerations:gens,generationLabel:gens.length?gens.map(genLabel).join(' / '):'',processorGen,mbGenOption1:mbGen1,mbGenOption2:mbGen2,ramSupport,ramSlotOption1:pick(p,'RAM SLOT OPTION 1','RAM SLOT 1','ramSlotOption1'),ramSlotOption2:pick(p,'RAM SLOT OPTION 2','RAM SLOT 2','ramSlotOption2'),ramSlot:pick(p,'RAM SLOT','ramSlot'),memory:(category==='RAM'?(ramSupport||capacity):(category==='MOTHERBOARD'?ramSupport:capacity)),capacity,chipset:upper(pick(p,'CHIPSET','chipset')),socket:upper(pick(p,'SOCKET / GEN','SOCKET','socketGen','socket')),stock:pick(p,'STOCK','stock'),description:pick(p,'DESCRIPTION','description'),warranty:pick(p,'WARRANTY','warranty'),warrantyMonths:pick(p,'WARRANTY MONTHS','WARRANTY MONTH','warrantyMonths'),storageType:ssdType,ssdSupport,sataSupport:true,sataOnlySupport:ssdSupport.includes('SATA ONLY'),m2SataSupport:ssdSupport.includes('M.2')||ssdSupport.includes('M2')||yesNo(pick(p,'M2 SUPPORT','M.2 SUPPORT','m2SataSupport')),nvmeSupport:ssdSupport.includes('NVME')||yesNo(pick(p,'NVME SUPPORT','nvmeSupport')),monitorSize:upper(pick(p,'MONITOR SIZE','monitorSize')).replace(/\s+INCH/i,'').trim(),panelType:upper(pick(p,'PANEL TYPE','panelType')),speed:upper(pick(p,'SPEED','speed')),watt:upper(pick(p,'WATT','WAT','watt')),rgb:upper(pick(p,'RGB','rgb'))};
-    };
-
-    productCard=function(p){const st=statusLabel(p),out=st.includes('OUT');return `<article class="card product-card ${out?'is-outofstock':''}" data-product-id="${esc(p.id)}" tabindex="0"><div class="product-img-wrap"><img src="${esc(productImage(p))}" alt="${esc(p.name)}" onerror="this.src='assets/img/logo.jpg'"><div class="tag-row"><span class="tag ${isNewCond(p)?'new':'used'}">${esc(p.condition)}</span><span class="tag ${out?'danger':'new'}">${esc(st)}</span>${p.capacity?`<span class="tag">${esc(p.capacity)}</span>`:''}${p.model?`<span class="tag">${esc(p.model)}</span>`:''}</div></div><div class="product-body"><h3>${esc(p.name)}</h3><div class="meta"><span>${esc(p.category)}</span>${p.brand?`<span>${esc(p.brand)}</span>`:''}${p.model?`<span>${esc(p.model)}</span>`:''}${p.ramSupport?`<span>${esc(p.ramSupport)}</span>`:''}${storageLabel(p)?`<span>${esc(storageLabel(p))}</span>`:''}</div><div class="price">${money(p.price)}</div><div class="stock">${esc(st)} • Stock: ${esc(p.stock||'Contact')} • Warranty: ${esc(warrantyText(p))}</div><div class="product-actions"><button class="btn btn-ghost btn-small" data-view-product="${esc(p.id)}">View Details</button><button class="btn btn-primary btn-small" data-add-to-cart="${esc(p.id)}" ${out?'disabled':''}>Add to cart</button></div></div></article>`};
-    function filterVal(id){return upper($(id)?.value||'')}
-    function filterMatch(p){const cat=upper($('#categoryFilter')?.value),q=filterVal('#productSearch'),cond=filterVal('#conditionFilter'),brand=filterVal('#brandFilter'),model=filterVal('#modelFilter'),pgen=normalizeGenKey($('#processorGenFilter')?.value||''),bgen=normalizeGenKey($('#generationFilter')?.value||''),ram=filterVal('#ramSupportFilter'),storage=filterVal('#storageFilter'),ssd=filterVal('#ssdTypeFilter'),size=filterVal('#monitorSizeFilter'),panel=filterVal('#panelTypeFilter'),cap=filterVal('#capacityFilter'),speed=filterVal('#speedFilter'),watt=filterVal('#wattFilter'),rgb=filterVal('#rgbFilter'),socket=filterVal('#socketGenFilter');const hay=upper([p.name,p.category,p.condition,p.status,p.brand,p.model,p.capacity,p.memory,p.ramSupport,p.description,p.watt,p.rgb,p.monitorSize,p.panelType,storageLabel(p)].join(' '));const gens=(p.generations||[]).map(String);return(!q||hay.includes(q))&&(!cat||p.category===cat)&&(!cond||p.condition===cond)&&(!brand||upper(p.brand)===brand)&&(!model||upper(p.model).includes(model))&&(!pgen||normalizeGenKey(p.processorGen||p.generation)===pgen||gens.includes(String(pgen)))&&(!bgen||gens.includes(String(bgen)))&&(!ram||upper(p.ramSupport)===ram||upper(p.memory)===ram)&&(!storage||upper(p.ssdSupport)===storage)&&(!ssd||upper(storageLabel(p))===ssd)&&(!size||upper(p.monitorSize)===size)&&(!panel||upper(p.panelType)===panel)&&(!cap||upper(p.capacity)===cap||upper(p.memory)===cap)&&(!speed||upper(p.speed)===speed)&&(!watt||upper(p.watt)===watt)&&(!rgb||upper(p.rgb)===rgb)&&(!socket||upper(p.socket)===socket)}
-    const FILTER_MAP={CASING:['condition','brand','rgb'],MOTHERBOARD:['condition','brand','generation','ramSupport','storage'],PROCESSOR:['condition','brand','model','processorGen'],'CPU COOLER':['condition','brand','socketGen'],RAM:['condition','brand','ramSupport','capacity','speed'],'HARD DISK':['condition','brand','capacity'],SSD:['condition','brand','capacity','ssdType'],'VGA CARD':['condition','brand','model','capacity'],'POWER SUPPLY':['condition','brand','watt'],MONITOR:['condition','brand','monitorSize','panelType'],LAPTOP:['condition','brand','model'],KEYBOARD:['brand','rgb'],MOUSE:['brand','rgb'],'MOUSE PAD':['brand','rgb'],SPEAKER:['brand','rgb'],HEADSET:['brand','rgb'],CABLES:['brand','model'],'RGB CASING FAN':['brand','rgb'],OTHER:['condition','brand','model']};
-    function setFilterVisibility(cat){const allowed=new Set(cat&&FILTER_MAP[cat]?FILTER_MAP[cat]:['condition','brand','model','processorGen','generation','ramSupport','storage','ssdType','monitorSize','panelType','capacity','speed','watt','rgb','socketGen']);[['#conditionFilter','condition'],['#brandFilter','brand'],['#modelFilter','model'],['#processorGenFilter','processorGen']].forEach(([id,k])=>{const el=$(id);if(el)el.style.display=allowed.has(k)?'':'none'});$all('[data-filter-box]').forEach(box=>box.style.display=allowed.has(box.getAttribute('data-filter-box'))?'':'none')}
-    initProductsPage=async function(){const products=await loadProducts(),grid=$('#productsGrid');if(!grid)return;productsCache=products;ensureProductModal();const cats=Array.from(new Set([...CATEGORIES,...products.map(p=>p.category)])).filter(Boolean).sort(),catList=$('#categoryList'),catFilter=$('#categoryFilter');if(catFilter)catFilter.innerHTML='<option value="">All Categories</option>'+cats.map(c=>`<option value="${esc(c)}">${esc(categoryLabel(c))}</option>`).join('');function renderCats(){if(!catList)return;const a=catFilter?.value||'';catList.innerHTML=`<button class="category-link ${!a?'active':''}" data-cat="">All Categories <span>${products.length}</span></button>`+cats.map(c=>`<button class="category-link ${a===c?'active':''}" data-cat="${esc(c)}">${esc(categoryLabel(c))}<span>${products.filter(p=>p.category===c).length}</span></button>`).join('')}catList?.addEventListener('click',e=>{const b=e.target.closest('[data-cat]');if(!b)return;if(catFilter)catFilter.value=b.getAttribute('data-cat');updateOptions();render()});function updateOptions(){const cat=catFilter?.value||'',pool=cat?products.filter(p=>p.category===cat):products;setFilterVisibility(cat);const brands=unique(pool,p=>p.brand);populateSelect($('#brandFilter'),brands.concat(cat==='LAPTOP'?['ASUS','MSI','LENOVO'].filter(x=>!brands.includes(x)):[]),'Brand');const models=unique(pool,p=>p.model);populateSelect($('#modelFilter'),models.concat(cat==='LAPTOP'?['I3','I5','I7'].filter(x=>!models.includes(x)):[]),cat==='LAPTOP'?'Model I3 / I5 / I7':'Model / Type');populateSelect($('#processorGenFilter'),['2ND GEN','3RD GEN','4TH GEN','5TH GEN','6TH GEN','7TH GEN','8TH GEN','9TH GEN','10TH GEN','11TH GEN','12TH GEN','13TH GEN','14TH GEN'],'Processor Gen');populateSelect($('#generationFilter'),['2ND GEN','3RD GEN','4TH GEN','5TH GEN','6TH GEN','7TH GEN','8TH GEN','9TH GEN','10TH GEN','11TH GEN','12TH GEN','13TH GEN','14TH GEN'],'Board Gen');populateSelect($('#ramSupportFilter'),unique(pool,p=>p.ramSupport||p.memory),'RAM Support');populateSelect($('#storageFilter'),unique(pool,p=>p.ssdSupport),'SSD Support');populateSelect($('#ssdTypeFilter'),unique(pool,p=>storageLabel(p)),'SSD Type');populateSelect($('#monitorSizeFilter'),unique(pool,p=>p.monitorSize),'Monitor Size');populateSelect($('#panelTypeFilter'),unique(pool,p=>p.panelType),'Panel Type');populateSelect($('#capacityFilter'),unique(pool,p=>p.capacity||p.memory),'Capacity / Memory');populateSelect($('#speedFilter'),unique(pool,p=>p.speed),'Speed');populateSelect($('#wattFilter'),unique(pool,p=>p.watt),'Watt');populateSelect($('#rgbFilter'),unique(pool,p=>p.rgb),'RGB / Non RGB');populateSelect($('#socketGenFilter'),unique(pool,p=>p.socket),'Socket / Gen')}
-      function render(){renderCats();const filtered=products.filter(filterMatch);$('#productCount')&&($('#productCount').textContent=`${filtered.length} items`);$('#resultCount')&&($('#resultCount').textContent=`${filtered.length} items`);grid.innerHTML=filtered.length?filtered.map(productCard).join(''):'<div class="empty-state card">No matching products found.</div>'}grid.addEventListener('click',e=>{const v=e.target.closest('[data-view-product]');if(v){e.preventDefault();openProductModal(v.getAttribute('data-view-product'));return}const add=e.target.closest('[data-add-to-cart]');if(add){e.preventDefault();addToCart(add.getAttribute('data-add-to-cart'),1);return}if(e.target.closest('button,a,input,select,textarea'))return;const card=e.target.closest('[data-product-id]');if(card)openProductModal(card.getAttribute('data-product-id'))});['#productSearch','#categoryFilter','#conditionFilter','#brandFilter','#modelFilter','#processorGenFilter','#generationFilter','#ramSupportFilter','#storageFilter','#ssdTypeFilter','#monitorSizeFilter','#panelTypeFilter','#capacityFilter','#speedFilter','#wattFilter','#rgbFilter','#socketGenFilter'].map(id=>$(id)).filter(Boolean).forEach(el=>['input','change'].forEach(ev=>el.addEventListener(ev,()=>{if(el.id==='categoryFilter')updateOptions();render()})));updateOptions();render()};
-
-    function quoteDefs(){return[{k:'casing',l:'Casing',c:'CASING'},{k:'processor',l:'Processor',c:'PROCESSOR',f:['brand','model','processorGen']},{k:'motherboard',l:'Motherboard',c:'MOTHERBOARD',f:['brand','ramSupport','storage'],slot:1},{k:'cooler',l:'CPU Cooler',c:'CPU COOLER',f:['brand','socketGen']},{k:'ram',l:'RAM',c:'RAM',f:['brand','ramSupport','capacity','speed'],qty:1},{k:'hdd',l:'HDD',c:'HARD DISK',f:['brand','capacity'],qty:1},{k:'ssd',l:'SSD',c:'SSD',f:['brand','capacity','ssdType'],qty:1},{k:'psu',l:'Power Supply',c:'POWER SUPPLY',f:['brand','watt']},{k:'vga',l:'VGA Card',c:'VGA CARD',f:['brand','model','capacity']},{k:'monitor',l:'Monitor',c:'MONITOR',f:['brand','monitorSize','panelType']},{k:'laptop',l:'Laptop',c:'LAPTOP',f:['brand','model']},{k:'keyboard',l:'Keyboard',c:'KEYBOARD',f:['brand','rgb']},{k:'mouse',l:'Mouse',c:'MOUSE',f:['brand','rgb']},{k:'mousepad',l:'Mouse Pad',c:'MOUSE PAD',f:['brand','rgb']},{k:'speaker',l:'Speaker',c:'SPEAKER',f:['brand','rgb']},{k:'headset',l:'Headset',c:'HEADSET',f:['brand','rgb']},{k:'fan',l:'RGB Casing Fan',c:'RGB CASING FAN',f:['brand','rgb'],qty:1},{k:'cables',l:'Cables',c:'CABLES',f:['brand','model'],qty:1},{k:'other',l:'Other',c:'OTHER',f:['brand','model'],qty:1}]}
-    function qFilter(f,cat){const name={brand:'Brand',model:cat==='LAPTOP'?'Model I3 / I5 / I7':'Model / Type',processorGen:'Processor Gen',ramSupport:'RAM Support',storage:'SSD Support',ssdType:'SSD Type',monitorSize:'Monitor Size',panelType:'Panel Type',capacity:'Capacity / Memory',speed:'Speed',watt:'Watt',rgb:'RGB / Non RGB',socketGen:'Socket / Gen'}[f]||'Filter';return `<select class="input quote-filter" data-filter="${f}"><option value="">${name}</option></select>`}
-    function qRow(d){return `<div class="field quote-item" data-key="${d.k}" data-category="${d.c}"><label>${d.l}</label><div class="condition-switch" data-condition-switch><button type="button" class="active" data-cond="">All</button><button type="button" data-cond="USED">Used</button><button type="button" data-cond="BRAND NEW">Brand New</button></div><div class="select-qty-row quote-filter-row">${(d.f||[]).map(f=>qFilter(f,d.c)).join('')}</div><div class="select-qty-row"><select class="input quote-product-select"><option value="">Skip ${d.l}</option></select>${d.slot?'<select class="input quote-ram-slot" style="display:none"></select>':''}<input class="input quote-qty-input" type="number" min="1" value="1" ${d.qty?'':'style="display:none"'}></div></div>`}
-    function qPool(products,d,row){let list=products.filter(p=>p.category===d.c&&isQuotable(p));const cond=row.querySelector('[data-condition-switch] button.active')?.dataset.cond||'';if(cond)list=list.filter(p=>p.condition===cond);row.querySelectorAll('.quote-filter').forEach(sel=>{const k=sel.dataset.filter,v=upper(sel.value);if(!v)return;list=list.filter(p=>k==='brand'?upper(p.brand)===v:k==='model'?upper(p.model).includes(v):k==='processorGen'?normalizeGenKey(p.processorGen||p.generation)===normalizeGenKey(v):k==='ramSupport'?upper(p.ramSupport||p.memory)===v:k==='storage'?upper(p.ssdSupport)===v:k==='ssdType'?upper(storageLabel(p))===v:k==='monitorSize'?upper(p.monitorSize)===v:k==='panelType'?upper(p.panelType)===v:k==='capacity'?upper(p.capacity||p.memory)===v:k==='speed'?upper(p.speed)===v:k==='watt'?upper(p.watt)===v:k==='rgb'?upper(p.rgb)===v:k==='socketGen'?upper(p.socket)===v:true)});const cpu=byId(products,document.querySelector('[data-key="processor"] .quote-product-select')?.value||'');if(d.c==='MOTHERBOARD'&&cpu){const g=normalizeGenKey(cpu.processorGen||cpu.generation);list=list.filter(p=>(p.generations||[]).map(String).includes(String(g)))}const board=byId(products,document.querySelector('[data-key="motherboard"] .quote-product-select')?.value||'');if(d.c==='RAM'&&board&&board.ramSupport)list=list.filter(p=>upper(p.ramSupport||p.memory)===upper(board.ramSupport));if(d.c==='SSD'&&board)list=list.filter(p=>isSsdCompatibleWithBoard(p,board));return list}
-    function qRefresh(products,row){const d=quoteDefs().find(x=>x.k===row.dataset.key);if(!d)return;const base=products.filter(p=>p.category===d.c&&isQuotable(p));row.querySelectorAll('.quote-filter').forEach(sel=>{const k=sel.dataset.filter;let vals=[];if(k==='brand')vals=unique(base,p=>p.brand);if(k==='model')vals=unique(base,p=>p.model).concat(d.c==='LAPTOP'?['I3','I5','I7'].filter(x=>!unique(base,p=>p.model).includes(x)):[]);if(k==='processorGen')vals=['2ND GEN','3RD GEN','4TH GEN','5TH GEN','6TH GEN','7TH GEN','8TH GEN','9TH GEN','10TH GEN','11TH GEN','12TH GEN','13TH GEN','14TH GEN'];if(k==='ramSupport')vals=unique(base,p=>p.ramSupport||p.memory);if(k==='storage')vals=unique(base,p=>p.ssdSupport);if(k==='ssdType')vals=unique(base,p=>storageLabel(p));if(k==='monitorSize')vals=unique(base,p=>p.monitorSize);if(k==='panelType')vals=unique(base,p=>p.panelType);if(k==='capacity')vals=unique(base,p=>p.capacity||p.memory);if(k==='speed')vals=unique(base,p=>p.speed);if(k==='watt')vals=unique(base,p=>p.watt);if(k==='rgb')vals=unique(base,p=>p.rgb);if(k==='socketGen')vals=unique(base,p=>p.socket);populateSelect(sel,vals,sel.options[0]?.textContent||'Filter')});const sel=row.querySelector('.quote-product-select'),cur=sel?.value||'',list=qPool(products,d,row);fillSelect(sel,list,`Skip ${d.l}`);if(list.some(p=>p.id===cur))sel.value=cur;if(d.slot){const slotSel=row.querySelector('.quote-ram-slot'),board=byId(products,sel.value);if(slotSel&&board){const opts=getRamSlotOptions(board);slotSel.innerHTML=opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('');slotSel.style.display=''}else if(slotSel)slotSel.style.display='none'}}
-    initQuotationPage=async function(){const products=await loadProducts();quoteProducts=products;const form=$('#quoteComponentForm');if(!form)return;form.innerHTML=quoteDefs().map(qRow).join('');form.addEventListener('click',e=>{const b=e.target.closest('[data-condition-switch] button');if(!b)return;const sw=b.closest('[data-condition-switch]');sw.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');qRefresh(products,b.closest('.quote-item'));renderQuote()});form.addEventListener('change',e=>{const row=e.target.closest('.quote-item');if(!row)return;qRefresh(products,row);if(['processor','motherboard'].includes(row.dataset.key))form.querySelectorAll('.quote-item').forEach(r=>qRefresh(products,r));renderQuote()});form.querySelectorAll('.quote-item').forEach(r=>qRefresh(products,r));$('#addQuoteToCartBtn')?.addEventListener('click',()=>{const ids=getQuoteItems().map(x=>x.id).filter(Boolean);if(!ids.length){toast('Select products first');return}addManyToCart(ids)});$('#downloadQuotePdfBtn')?.addEventListener('click',downloadQuotationPdf);renderQuote()};
-    getQuoteItems=function(){const items=[],products=quoteProducts||productsCache||[];document.querySelectorAll('.quote-item').forEach(row=>{const id=row.querySelector('.quote-product-select')?.value;if(!id)return;const p=byId(products,id);if(!p)return;const qty=Math.max(1,Number(row.querySelector('.quote-qty-input')?.value||1));let name=p.name,rate=p.price;if(p.category==='MOTHERBOARD'){const slot=row.querySelector('.quote-ram-slot')?.value||'';if(slot){name=`${p.name.replace(/\b(MOTHERBOARD|MOTHERBORD|BOARD)\b/ig,'').trim()} ${slot} Motherboard`.replace(/\s+/g,' ');if(slot.includes('4'))rate+=500}}items.push({...p,name,qty,rate,amount:rate*qty,price:rate*qty,warrantyText:warrantyText(p)})});return items};
-    renderQuote=function(){const tbody=$('#quoteTable tbody');if(!tbody)return;const items=getQuoteItems(),total=items.reduce((s,p)=>s+p.amount,0);const casing=items.find(x=>x.category==='CASING'),box=$('#casingPreviewBox'),nm=$('#casingPreviewName');if(box)box.innerHTML=casing?`<img src="${esc(productImage(casing))}" alt="${esc(casing.name)}" onerror="this.src='assets/img/logo.jpg'">`:'<span class="muted">Select a casing to preview</span>';if(nm)nm.textContent=casing?casing.name:'Casing Preview';tbody.innerHTML=items.length?items.map((p,i)=>`<tr><td>${i+1}</td><td>${esc(p.name)}</td><td>${esc(p.warrantyText||warrantyText(p))}</td><td>${p.qty}</td><td>${money(p.rate)}</td><td>${money(p.amount)}</td></tr>`).join(''):'<tr><td colspan="6" class="muted">No items selected yet.</td></tr>';$('#quoteTotal')&&($('#quoteTotal').textContent=money(total))};
-  })();
 
   document.addEventListener('DOMContentLoaded',()=>{
     bindCommon();
