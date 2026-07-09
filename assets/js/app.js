@@ -321,7 +321,7 @@
       ${sectionHTML('fan','RGB Casing Fan','RGB CASING FAN',{qty:true,qtyId:'quoteFanQty'})}
       <div class="quote-item-card"><label>Cables</label><div class="quote-extra-grid">${EXTRA_CABLES.map(c=>`<label><input type="checkbox" data-extra-cable="${esc(c.id)}"> ${esc(c.name)} <span class="muted">${money(c.rate)}</span></label><input class="input" type="number" min="1" value="1" data-extra-cable-qty="${esc(c.id)}">`).join('')}</div></div>`;
     // table header fix
-    const table=$('#quoteTable'); if(table) table.innerHTML='<thead><tr><th>No.</th><th>Product Name</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody></tbody>';
+    const table=$('#quoteTable'); if(table) table.innerHTML='<thead><tr><th>No.</th><th>Product Name</th><th>Warranty</th><th>Qty</th><th>Rate</th><th>Amount</th></tr></thead><tbody></tbody>';
     renderCasingPreview(); refreshAllQuoteSelects(false); renderQuote();
     form.addEventListener('click',e=>{ const b=e.target.closest('[data-cond]'); if(!b)return; const wrap=b.closest('[data-cond-key]'); const key=wrap.dataset.condKey; qState.conditions[key]=b.dataset.cond; $all('button',wrap).forEach(x=>x.classList.toggle('active',x===b)); refreshQuoteSelect(key); renderQuote(); });
     form.addEventListener('change',e=>{ const el=e.target; if(el.matches('select,input')){
@@ -366,20 +366,24 @@
     if(!box)return; if(p){ box.innerHTML=`<img src="${esc(productImage(p))}" alt="${esc(p.name)}" onerror="this.src='${LOGO_FALLBACK}'">`; if(name)name.textContent=p.name; } else { box.innerHTML='<span class="muted">Select a casing to preview</span>'; if(name)name.textContent='Casing Preview'; }
   }
   function selectedProduct(key){ return quoteProducts.find(p=>p.id===$(`#${key}Select`)?.value); }
+  function quoteWarranty(p){
+    return warrantyText(p).replace(/\s*warranty\s*$/i,'').trim() || 'Warranty as available';
+  }
   function quoteItemFromProduct(p,key,qty=1){
     let rate=p.price, name=p.name;
     if(key==='motherboard' && qState.selectedSlot){ rate += qState.selectedSlot==='4 RAM SLOT' ? 500 : 0; name = `${p.name.replace(/\s+Motherboard$/i,'')} ${qState.selectedSlot} Motherboard`; }
-    return {id:p.id+'-'+key+(qState.selectedSlot||''), name, category:p.category, condition:p.condition, qty:Number(qty||1), rate, amount:rate*Number(qty||1)};
+    const q = Math.max(1, Number(qty||1));
+    return {id:p.id+'-'+key+(qState.selectedSlot||''), sourceId:p.id, name, category:p.category, condition:p.condition, warranty:quoteWarranty(p), warrantyMonths:clean(p.warrantyMonths), qty:q, rate, amount:rate*q};
   }
   function getQuoteItems(){
     const map=[['casing',1],['processor',1],['motherboard',1],['cpuCooler',1],['ram',$('#quoteRamQty')?.value||1],['hdd',$('#quoteHddQty')?.value||1],['ssd',$('#quoteSsdQty')?.value||1],['psu',1],['vga',1],['monitor',1],['keyboard',1],['mouse',1],['mousepad',1],['speaker',1],['headset',1],['fan',$('#quoteFanQty')?.value||1]];
     const items=[]; map.forEach(([key,qty])=>{ const p=selectedProduct(key); if(p) items.push(quoteItemFromProduct(p,key,qty)); });
-    EXTRA_CABLES.forEach(c=>{ const chk=$(`[data-extra-cable="${c.id}"]`); if(chk?.checked){ const qty=Number($(`[data-extra-cable-qty="${c.id}"]`)?.value||1); items.push({id:c.id,name:c.name,category:'CABLES',condition:'BRAND NEW',qty,rate:c.rate,amount:c.rate*qty}); }});
+    EXTRA_CABLES.forEach(c=>{ const chk=$(`[data-extra-cable="${c.id}"]`); if(chk?.checked){ const qty=Math.max(1,Number($(`[data-extra-cable-qty="${c.id}"]`)?.value||1)); items.push({id:c.id,name:c.name,category:'CABLES',condition:'BRAND NEW',warranty:'-',warrantyMonths:'',qty,rate:c.rate,amount:c.rate*qty}); }});
     return items;
   }
   function renderQuote(){
     renderCasingPreview(); const tbody=$('#quoteTable tbody'); if(!tbody)return; const items=getQuoteItems(); const total=items.reduce((s,x)=>s+x.amount,0);
-    tbody.innerHTML = items.length ? items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.name)}</td><td>${it.qty}</td><td>${money(it.rate)}</td><td>${money(it.amount)}</td></tr>`).join('') : '<tr><td colspan="5" class="muted">No items selected yet.</td></tr>';
+    tbody.innerHTML = items.length ? items.map((it,i)=>`<tr><td>${i+1}</td><td>${esc(it.name)}<br><span class="muted">${esc(it.category)} • ${esc(it.condition)}</span></td><td>${esc(it.warranty)}</td><td>${it.qty}</td><td>${money(it.rate)}</td><td>${money(it.amount)}</td></tr>`).join('') : '<tr><td colspan="6" class="muted">No items selected yet.</td></tr>';
     $('#quoteTotal') && ($('#quoteTotal').textContent = money(total));
   }
   function quoteCustomer(){ return {name:clean($('#quoteCustomerName')?.value),phone:clean($('#quoteCustomerPhone')?.value),email:clean($('#quoteCustomerEmail')?.value),address:clean($('#quoteCustomerAddress')?.value)}; }
@@ -388,59 +392,129 @@
   function todayString(){ return new Date().toLocaleDateString('en-LK',{year:'numeric',month:'2-digit',day:'2-digit'}); }
   function pdfText(doc,text,x,y,opts={}){ doc.text(String(text||''),x,y,opts); }
   async function downloadQuotationPdf(){
-    const customer=validateQuoteCustomer(); if(!customer)return; const items=getQuoteItems(); if(!items.length){toast('Select products first');return;}
+    const customer=validateQuoteCustomer(); if(!customer)return;
+    const items=getQuoteItems(); if(!items.length){toast('Select products first');return;}
     const jsPDF=window.jspdf&&window.jspdf.jsPDF; if(!jsPDF){window.print();return;}
-    const doc=new jsPDF({unit:'pt',format:'a4'}); const qn=quoteNo(); const total=items.reduce((s,x)=>s+x.amount,0);
-    const W=595, H=842, blue=[0,92,220], cyan=[11,188,255], navy=[4,22,58], text=[32,45,72], light=[245,249,255], line=[211,226,247];
-    const bank=CONFIG.bank||{};
-    const addHeader = () => {
-      doc.setFillColor(255,255,255); doc.rect(0,0,W,H,'F');
-      doc.setFillColor(...navy); doc.rect(0,0,W,18,'F');
-      doc.setFillColor(...blue); doc.rect(0,18,W,6,'F');
-      doc.setFillColor(...cyan); doc.rect(40,104,300,10,'F');
-      doc.triangle(340,104,358,104,340,114,'F');
-      if(CONFIG.logoDataUrl){ try{doc.addImage(CONFIG.logoDataUrl,'PNG',42,42,58,58);}catch(e){} }
-      doc.setFont('helvetica','bold'); doc.setTextColor(...navy); doc.setFontSize(16); pdfText(doc,'SANDARUWAN',112,58); pdfText(doc,'COMPUTER ONLINE STORE',112,76);
-      doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(63,78,110); pdfText(doc,'YOUR TRUSTED PC PARTNER',112,93);
-      doc.setFont('helvetica','bold'); doc.setFontSize(32); doc.setTextColor(...navy); pdfText(doc,'QUOTATION',365,88);
-      doc.setFillColor(...blue); doc.rect(532,65,28,10,'F');
-    };
-    addHeader();
-    // Customer / quotation details
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...blue); pdfText(doc,'Quotation To:',58,154);
-    doc.setTextColor(...navy); doc.setFontSize(12); pdfText(doc,customer.name,58,174);
-    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...text); pdfText(doc,customer.phone,58,190); pdfText(doc,customer.email,58,204); doc.splitTextToSize(customer.address,215).slice(0,3).forEach((t,i)=>pdfText(doc,t,58,220+i*13));
-    doc.setDrawColor(...line); doc.line(322,148,322,236);
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy); pdfText(doc,'Quotation No.',350,168); pdfText(doc,':',435,168); doc.setTextColor(...blue); pdfText(doc,qn,450,168);
-    doc.setTextColor(...navy); pdfText(doc,'Date',350,193); pdfText(doc,':',435,193); doc.setTextColor(...blue); pdfText(doc,todayString(),450,193);
-    // Items table
-    let y=270;
-    const drawTableHead=()=>{doc.setFillColor(...navy); doc.rect(40,y,W-80,30,'F'); doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9.5); pdfText(doc,'No.',58,y+19); pdfText(doc,'Product Name',104,y+19); pdfText(doc,'Qty',333,y+19,{align:'center'}); pdfText(doc,'Rate',413,y+19,{align:'right'}); pdfText(doc,'Amount',532,y+19,{align:'right'}); y+=30;};
-    drawTableHead(); doc.setFont('helvetica','normal'); doc.setFontSize(9);
-    items.forEach((it,i)=>{
-      if(y>662){ doc.addPage(); y=44; addHeader(); y=150; drawTableHead(); doc.setFont('helvetica','normal'); doc.setFontSize(9); }
-      doc.setFillColor(...(i%2? [255,255,255] : light)); doc.rect(40,y,W-80,34,'F'); doc.setDrawColor(...line); doc.rect(40,y,W-80,34);
-      doc.setTextColor(...navy); pdfText(doc,String(i+1),62,y+21,{align:'center'});
-      const txt=doc.splitTextToSize(it.name,220); pdfText(doc,txt[0],104,y+14); if(txt[1]){doc.setFontSize(8); pdfText(doc,txt[1],104,y+27); doc.setFontSize(9);}
-      pdfText(doc,String(it.qty),333,y+21,{align:'center'}); pdfText(doc,money(it.rate),413,y+21,{align:'right'}); pdfText(doc,money(it.amount),532,y+21,{align:'right'}); y+=34;
-    });
-    // Total block
-    y+=18; const totalY=y;
-    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(...navy); pdfText(doc,'Sub Total',376,totalY+14); pdfText(doc,money(total),532,totalY+14,{align:'right'});
-    doc.setFillColor(...blue); doc.rect(360,totalY+32,195,36,'F'); doc.setTextColor(255,255,255); doc.setFontSize(13); pdfText(doc,'TOTAL',378,totalY+55); pdfText(doc,money(total),532,totalY+55,{align:'right'});
-    // Lower sections
-    y=totalY+98; if(y>660)y=660;
-    doc.setDrawColor(...blue); doc.line(58,y,300,y); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...blue); pdfText(doc,'PAYMENT DETAILS',58,y+22);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8.2); doc.setTextColor(...text);
-    pdfText(doc,`Account Name  : ${bank.accountName||'B A D T L SANDARUWAN'}`,58,y+44);
-    pdfText(doc,`Bank Name     : ${bank.name||'BOC BANK'}`,58,y+58);
-    pdfText(doc,`Account No.   : ${bank.accountNumber||'81054889'}`,58,y+72);
-    pdfText(doc,`Branch        : ${bank.branch||'RATHNAPURA BRANCH'}`,58,y+86);
-    doc.setDrawColor(...line); doc.line(333,y+20,333,y+96);
-    doc.setDrawColor(...blue); doc.circle(368,y+54,12); doc.setFont('helvetica','bold'); doc.setTextColor(...blue); doc.setFontSize(13); pdfText(doc,'i',368,y+59,{align:'center'});
-    doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(...text); pdfText(doc,'Final price may change after',392,y+50); pdfText(doc,'stock and delivery confirmation',392,y+65);
-    doc.setDrawColor(...blue); doc.line(40,790,325,790); doc.setFillColor(...blue); doc.rect(240,786,70,8,'F'); doc.line(420,790,555,790);
-    doc.setFontSize(8.5); doc.setTextColor(...blue); pdfText(doc,CONFIG.phoneDisplay||'077 992 6177',58,815); pdfText(doc,'Sandaruwan Computer',185,815); pdfText(doc,'Authorised Sign',487,815,{align:'center'});
+    const doc=new jsPDF({unit:'pt',format:'a4'});
+    const qn=quoteNo();
+    const total=items.reduce((s,x)=>s+x.amount,0);
+    const W=595, H=842;
+    const navy=[3,22,58], blue=[0,92,220], cyan=[14,179,255], text=[31,41,68], muted=[100,116,139], line=[210,225,247], soft=[246,250,255];
+
+    function setRGB(arr){ doc.setTextColor(arr[0],arr[1],arr[2]); }
+    function fillRGB(arr){ doc.setFillColor(arr[0],arr[1],arr[2]); }
+    function drawLogo(x,y,w,h){
+      if(CONFIG.logoDataUrl){ try{ doc.addImage(CONFIG.logoDataUrl,'PNG',x,y,w,h); return; }catch(e){} }
+      fillRGB(blue); doc.roundedRect(x,y,w,h,10,10,'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(24); pdfText(doc,'S',x+w/2,y+h*0.67,{align:'center'});
+    }
+    function pageChrome(){
+      fillRGB([255,255,255]); doc.rect(0,0,W,H,'F');
+      fillRGB(navy); doc.rect(0,0,W,16,'F');
+      fillRGB(blue); doc.rect(0,16,W,6,'F');
+      fillRGB(cyan); doc.rect(40,118,300,8,'F');
+      doc.triangle(340,118,358,118,340,126,'F');
+
+      drawLogo(44,42,56,56);
+      doc.setFont('helvetica','bold'); doc.setFontSize(15); setRGB(navy); pdfText(doc,'SANDARUWAN',112,56);
+      doc.setFontSize(13); pdfText(doc,'COMPUTER ONLINE STORE',112,74);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); setRGB([75,91,125]); pdfText(doc,'YOUR TRUSTED PC PARTNER',112,92);
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(32); setRGB(navy); pdfText(doc,'QUOTATION',358,84);
+      fillRGB(blue); doc.rect(535,62,28,10,'F');
+    }
+    function customerBlock(){
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); setRGB(blue); pdfText(doc,'Quotation To:',58,162);
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); setRGB(navy); pdfText(doc,customer.name,58,182);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.6); setRGB(text);
+      pdfText(doc,customer.phone,58,198);
+      pdfText(doc,customer.email,58,212);
+      doc.splitTextToSize(customer.address,210).slice(0,3).forEach((t,i)=>pdfText(doc,t,58,228+i*12));
+
+      doc.setDrawColor(line[0],line[1],line[2]); doc.line(320,150,320,242);
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setRGB(navy);
+      pdfText(doc,'Quotation No.',350,174); pdfText(doc,':',438,174); setRGB(blue); pdfText(doc,qn,454,174);
+      setRGB(navy); pdfText(doc,'Date',350,198); pdfText(doc,':',438,198); setRGB(blue); pdfText(doc,todayString(),454,198);
+      setRGB(navy); pdfText(doc,'Items',350,222); pdfText(doc,':',438,222); setRGB(blue); pdfText(doc,String(items.length),454,222);
+    }
+    function tableHeader(y){
+      fillRGB(navy); doc.rect(40,y,W-80,28,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.6); doc.setTextColor(255,255,255);
+      pdfText(doc,'No.',58,y+18,{align:'center'});
+      pdfText(doc,'Product Name',94,y+18);
+      pdfText(doc,'Qty',350,y+18,{align:'center'});
+      pdfText(doc,'Rate',440,y+18,{align:'right'});
+      pdfText(doc,'Amount',532,y+18,{align:'right'});
+      return y+28;
+    }
+    function footer(){
+      doc.setDrawColor(blue[0],blue[1],blue[2]);
+      doc.line(40,790,320,790);
+      fillRGB(blue); doc.rect(238,786,68,8,'F');
+      doc.line(420,790,555,790);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); setRGB(blue);
+      pdfText(doc,CONFIG.phoneDisplay||'077 992 6177',58,814);
+      pdfText(doc,'Sandaruwan Computer',184,814);
+      pdfText(doc,'Authorised Sign',487,814,{align:'center'});
+    }
+    function paymentAndTotal(y){
+      const bank=CONFIG.bank||{};
+      if(y>642)y=642;
+      doc.setFont('helvetica','bold'); doc.setFontSize(9.5); setRGB(navy);
+      pdfText(doc,'Sub Total',374,y+14); pdfText(doc,money(total),532,y+14,{align:'right'});
+      fillRGB(blue); doc.rect(360,y+28,195,34,'F');
+      doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(12.5);
+      pdfText(doc,'TOTAL',378,y+50); pdfText(doc,money(total),532,y+50,{align:'right'});
+
+      const py=y+88;
+      doc.setDrawColor(blue[0],blue[1],blue[2]); doc.line(58,py,300,py);
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); setRGB(blue); pdfText(doc,'PAYMENT DETAILS',58,py+22);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8); setRGB(text);
+      pdfText(doc,`Account Name  : ${bank.accountName||'B A D T L SANDARUWAN'}`,58,py+43);
+      pdfText(doc,`Bank Name     : ${bank.name||'BOC BANK'}`,58,py+57);
+      pdfText(doc,`Account No.   : ${bank.accountNumber||'81054889'}`,58,py+71);
+      pdfText(doc,`Branch        : ${bank.branch||'RATHNAPURA BRANCH'}`,58,py+85);
+
+      doc.setDrawColor(line[0],line[1],line[2]); doc.line(333,py+18,333,py+96);
+      doc.setDrawColor(blue[0],blue[1],blue[2]); doc.circle(368,py+53,12);
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); setRGB(blue); pdfText(doc,'i',368,py+58,{align:'center'});
+      doc.setFont('helvetica','normal'); doc.setFontSize(9); setRGB(text);
+      pdfText(doc,'Final price may change after',392,py+48);
+      pdfText(doc,'stock and delivery confirmation',392,py+63);
+    }
+
+    const rowsPerPage=12, rowH=30;
+    let index=0, page=0;
+    while(index<items.length){
+      if(page>0) doc.addPage();
+      pageChrome();
+      if(page===0) customerBlock();
+      let y = page===0 ? 268 : 150;
+      y = tableHeader(y);
+      const pageItems=items.slice(index,index+rowsPerPage);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      pageItems.forEach((it,idx)=>{
+        const globalIndex=index+idx;
+        fillRGB(globalIndex%2? [255,255,255] : soft); doc.rect(40,y,W-80,rowH,'F');
+        doc.setDrawColor(line[0],line[1],line[2]); doc.rect(40,y,W-80,rowH);
+        setRGB(navy);
+        pdfText(doc,String(globalIndex+1),58,y+18,{align:'center'});
+        const nameLines=doc.splitTextToSize(it.name,230);
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.3); setRGB(text); pdfText(doc,nameLines[0],94,y+12);
+        doc.setFontSize(7.2); setRGB(muted); pdfText(doc,`Warranty: ${it.warranty||'-'}`,94,y+24);
+        doc.setFontSize(8.5); setRGB(text);
+        pdfText(doc,String(it.qty),350,y+18,{align:'center'});
+        pdfText(doc,money(it.rate),440,y+18,{align:'right'});
+        pdfText(doc,money(it.amount),532,y+18,{align:'right'});
+        y += rowH;
+      });
+      index += rowsPerPage;
+      if(index>=items.length){
+        paymentAndTotal(y+18);
+      }
+      footer();
+      page++;
+    }
     doc.save(`sandaruwan-computer-quotation-${qn}.pdf`);
   }
 
